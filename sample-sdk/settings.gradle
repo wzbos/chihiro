@@ -1,0 +1,4 @@
+include ':library3'
+include ':library2'
+include ':library1'
+rootProject.name = 'sample-sdk'

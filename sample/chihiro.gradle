@@ -1,0 +1,40 @@
+/**
+ * Chihiro-Plugin setting
+ * github:https://github.com/wzbos/chihiro
+ */
+chihiro {
+    //true: print debug log,false: no print
+    log = true
+    //set debug project
+    projects = [[
+                        //project directory name
+                        name   : "sample-sdk",
+                        //true: include the project,false: no include
+                        debug  : true,
+                        // all modules for project
+                        modules: [[
+                                          //module name
+                                          name      : 'library1',
+                                          //maven group ,see gradle.properties
+                                          group     : 'cn.wzbos.chihiro.sample.sdk',
+                                          //maven artifactId,see gradle.properties
+                                          artifactId: 'library1',
+                                  ], [
+                                          //module name
+                                          name      : 'library2',
+                                          //maven group ,see gradle.properties
+                                          group     : 'cn.wzbos.chihiro.sample.sdk',
+                                          //maven artifactId,see gradle.properties
+                                          artifactId: 'library2',
+                                  ], [
+                                          //module name
+                                          name      : 'library3',
+                                          //maven group ,see gradle.properties
+                                          group     : 'cn.wzbos.chihiro.sample.sdk',
+                                          //maven artifactId,see gradle.properties
+                                          artifactId: 'library3',
+                                  ]]
+
+                ]
+    ]
+}

@@ -1,0 +1,12 @@
+apply plugin: 'java-library'
+apply plugin: 'chihiro'
+
+
+dependencies {
+    implementation fileTree(dir: 'libs', include: ['*.jar'])
+}
+
+sourceCompatibility = "1.8"
+targetCompatibility = "1.8"
+
+
