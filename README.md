@@ -48,7 +48,7 @@ repositories {
 PROJ_NAME=library1
 # 组件所属组
 PROJ_GROUP=cn.wzbos.android.library
-# 组件ID，必须与module名一致
+# 组件ID
 PROJ_ARTIFACTID=library1
 # 组件版本名称
 PROJ_VERSION=1.0.0
@@ -61,7 +61,7 @@ PROJ_DESCRIPTION=Lib For wzbos.cn
 # 组件发布类型，aar或者jar
 POM_PACKAGING=aar
 # 组件gitlab仓库地址
-PROJ_WEBSITEURL=https:\\//github.com/wzbos/chihiro
+PROJ_WEBSITEURL=https\://github.com/wzbos/chihiro
 # issues 地址
 PROJ_ISSUETRACKERURL=
 # Git仓库地址
@@ -76,13 +76,13 @@ DEVELOPER_EMAIL=
 
 #### 2、配置Maven仓库地址与用户名密码
 
-将以下配置放入project/gradle.properties 文件下，也可以将配置放入以上文件进行每个组件独立配置
+将以下配置放入project/gradle.properties 文件下，也可以将配置放入每个组件的gradle.properties文件内
 
 ```properties
 # MAVEN RELEASE仓库地址
-MAVEN_RELEASE_URL=http\://xxx.xxx.xxx.xx:xxx/repository/maven-releases
+MAVEN_RELEASE_URL=http\://xxx/repository/maven-releases
 # MAVEN SNAPSHOTS仓库地址
-MAVEN_SNAPSHOTS_URL==http\://xxx.xxx.xxx.xx:xxx/repository/maven-releases
+MAVEN_SNAPSHOTS_URL==http\://xxx/repository/maven-releases
 # MAVEN 登录名
 MAVEN_USERNAME=xxx
 # MAVEN 密码
