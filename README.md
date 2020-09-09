@@ -11,26 +11,41 @@
 
 ## 特性
 
-1.多组件开发无需频繁发布SNAPSHOT包
-2.支持多组件代码依赖方式联调，及同一工程，同一IDE（Android studio）加载多个Android Project
-3.解决发布组件时出现unspecified版本问题，再也不必按照依赖顺序发布每个组件
-4.组件配置更简单，无需每个组件去配置Maven上传脚本
+* 多组件开发无需频繁发布SNAPSHOT包
+* 支持多组件代码依赖方式联调，及同一工程，同一IDE（Android studio）加载多个Android Project
+* 解决发布组件时出现unspecified版本问题，再也不必按照依赖顺序发布每个组件
+* 组件配置更简单，无需每个组件去配置Maven上传脚本
 
 
 ## 快速接入
 
 ### 一、插件接入
 
-#### 在module/build.gradle文件中添加如下配置
+#### 1.在调用方Project的build.gradle中添加如下配置
 
 ```gradle
+buildscript {
 
-apply plugin: 'chihiro'
+    repositories {
+        jcenter()
+    }
 
-repositories {
-    jcenter()
+    dependencies {
+        classpath "cn.wzbos.android:chihiro-plugin:1.x"
+    }
 }
 
+allprojects {
+    repositories {
+        jcenter()
+    }
+}
+```
+
+#### 2.在module/build.gradle文件中添加如下配置
+
+```gradle
+apply plugin: 'chihiro'
 ```
 
 ### 二、创建组件
