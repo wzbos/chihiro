@@ -27,7 +27,7 @@ class JavaMvnPlugin implements Plugin<Project> {
             project.uploadArchives {
                 repositories {
                     mavenDeployer {
-                        beforeDeployment { MavenDeployment deployment -> signing.signPom(deployment) }
+                        beforeDeployment { MavenDeployment deployment -> project.signing.signPom(deployment) }
 
                         pom.groupId = project.PROJ_GROUP
                         pom.artifactId = project.PROJ_ARTIFACTID

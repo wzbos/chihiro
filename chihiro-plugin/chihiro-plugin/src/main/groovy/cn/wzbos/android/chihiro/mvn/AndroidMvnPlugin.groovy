@@ -29,7 +29,7 @@ class AndroidMvnPlugin implements Plugin<Project> {
             project.uploadArchives {
                 repositories {
                     mavenDeployer {
-                        beforeDeployment { MavenDeployment deployment -> signing.signPom(deployment) }
+                        beforeDeployment { MavenDeployment deployment -> project.signing.signPom(deployment) }
 
                         pom.groupId = project.PROJ_GROUP
                         pom.artifactId = project.PROJ_ARTIFACTID
@@ -69,11 +69,12 @@ class AndroidMvnPlugin implements Plugin<Project> {
                             pom.dependencies.forEach { dep ->
                                 if ("unspecified".equalsIgnoreCase(dep.getVersion())) {
                                     try {
-                                        File gradlePropertiesFile = file("${project.projectDir.parent}/$dep.artifactId/gradle.properties")
+                                        project.getByName("")
+                                        File gradlePropertiesFile = new File("${project.projectDir.parent}/$dep.artifactId/gradle.properties")
                                         println(">>>> dep:$dep")
                                         println(">>>> file:${gradlePropertiesFile.path}")
                                         if (!gradlePropertiesFile.exists()) {
-                                            throw new FileNotFoundException("Maven配置文件不存在，请添加配置！file:${gradlePropertiesFile.path}")
+                                            throw new FileNotFoundException("Maven配置文件不存在，请添加配置！\nfile:${gradlePropertiesFile.path}")
                                         }
                                         Properties properties = new Properties()
                                         properties.load(new FileInputStream(gradlePropertiesFile))

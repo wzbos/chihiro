@@ -55,7 +55,7 @@ class ChihiroPlugin implements Plugin<Project> {
         pro.rootProject.ext {
             dynamic = { path ->
                 def parentPrjName = pro.getParent().name
-                log("dynamic, project:$parentPrjName,path:$path")
+                log("dynamic, project=$parentPrjName, path=$path")
                 if (settings != null && settings.isDebug(parentPrjName)) {
                     try {
                         log("dynamic($path) ==> project(:${parentPrjName}${path})")
@@ -84,10 +84,6 @@ class ChihiroPlugin implements Plugin<Project> {
                 if (pro.plugins.hasPlugin('com.android.library')) {
                     log("Mvn:${pro.name} ==> AndroidMvnPlugin")
                     pro.apply plugin: AndroidMvnPlugin
-                    pro.android.defaultConfig {
-                        buildConfigField("String", "BUILD_TIME", "\"${new Date().format("yyyy/MM/dd HH:mm:ss")}\"")
-                        buildConfigField("String", "BUILD_CODE", "\"${System.currentTimeMillis()}\"")
-                    }
                 } else if (pro.plugins.hasPlugin('java')) {
                     log("Mvn:${pro.name} ==> JavaMvnPlugin")
                     pro.apply plugin: JavaMvnPlugin
