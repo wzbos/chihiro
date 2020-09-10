@@ -69,7 +69,6 @@ class AndroidMvnPlugin implements Plugin<Project> {
                             pom.dependencies.forEach { dep ->
                                 if ("unspecified".equalsIgnoreCase(dep.getVersion())) {
                                     try {
-                                        project.getByName("")
                                         File gradlePropertiesFile = new File("${project.projectDir.parent}/$dep.artifactId/gradle.properties")
                                         println(">>>> dep:$dep")
                                         println(">>>> file:${gradlePropertiesFile.path}")
