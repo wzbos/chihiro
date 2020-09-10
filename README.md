@@ -2,7 +2,6 @@
 
 千寻安卓组件快速开发插件 android chihiro plugin
 
-
  [ ![Download](https://api.bintray.com/packages/wuzongbo/maven/chihiro-plugin/images/download.svg) ](https://bintray.com/wuzongbo/maven/chihiro-plugin/_latestVersion)
 
 
@@ -164,38 +163,23 @@ group为组件包名(gradle.properties文件中的PROJ_GROUP值)
  * github:https://github.com/wzbos/chihiro
  */
 chihiro {
-    //true: print debug log,false: no print
+    // true: 打印调式日志,false: 不打印调式日志
     log = true
-    //set debug project
+    // 设置联调工程
     projects = [[
-                        //project directory name
+                        // 工程文件夹名称（注意：需要将此工程放入依赖工程同一级目录）
                         name   : "sample-sdk",
-                        //true: include the project,false: no include
+                        // true: 导入工程,false: 不导入工程
                         debug  : true,
-                        // all modules for project
+                        // 工程内所有module
                         modules: [[
-                                          //module name
+                                          // 模块名称
                                           name      : 'library1',
-                                          //maven group ,see gradle.properties
-                                          group     : 'cn.wzbos.chihiro.sample.sdk',
-                                          //maven artifactId,see gradle.properties
-                                          artifactId: 'library1',
-                                  ], [
-                                          //module name
-                                          name      : 'library2',
-                                          //maven group ,see gradle.properties
-                                          group     : 'cn.wzbos.chihiro.sample.sdk',
-                                          //maven artifactId,see gradle.properties
-                                          artifactId: 'library2',
-                                  ], [
-                                          //module name
-                                          name      : 'library3',
-                                          //maven group ,see gradle.properties
-                                          group     : 'cn.wzbos.chihiro.sample.sdk',
-                                          //maven artifactId,see gradle.properties
-                                          artifactId: 'library3',
-                                  ]]
-
+                                          // 依赖地址，对应dependencies格式，但是不需要设置版本号
+                                          repository: 'cn.wzbos.chihiro.sample.sdk:library1'
+                                  ],
+                                  [name: 'library2', repository: 'cn.wzbos.chihiro.sample.sdk:library2'],
+                                  [name: 'library3', repository: 'cn.wzbos.chihiro.sample.sdk:library3']]
                 ]
     ]
 }

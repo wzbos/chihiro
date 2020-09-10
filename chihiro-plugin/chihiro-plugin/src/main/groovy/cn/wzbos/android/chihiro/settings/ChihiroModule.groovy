@@ -6,34 +6,34 @@ package cn.wzbos.android.chihiro.settings
  */
 class ChihiroModule {
     /**
-     * 组件所属组
-     * 例如：cn.wzbos.android:chihiro:1.0.0，其中cn.wzbos.android为group
-     */
-    private String group
-    /**
-     * 组件artifactId
-     * 例如：cn.wzbos.android:chihiro:1.0.0，其中chihiro为artifactId
-     */
-    private String artifactId
-    /**
      * module名称
      */
     private String name
+    /**
+     * repository
+     */
+    private String repository
 
     String getGroup() {
-        return group
-    }
+        if (repository == null)
+            return ""
 
-    void setGroup(String group) {
-        this.group = group
+        String[] arrayOfStrings = repository.split(":")
+        if (arrayOfStrings.length < 1)
+            return ""
+
+        return arrayOfStrings[0]
     }
 
     String getArtifactId() {
-        return artifactId
-    }
+        if (repository == null)
+            return ""
 
-    void setArtifactId(String artifactId) {
-        this.artifactId = artifactId
+        String[] arrayOfStrings = repository.split(":")
+        if (arrayOfStrings.length < 2)
+            return ""
+
+        return arrayOfStrings[1]
     }
 
     String getName() {
@@ -47,9 +47,8 @@ class ChihiroModule {
     @Override
     String toString() {
         return "ChihiroModule{" +
-                "group='" + group + '\'' +
-                ", artifactId='" + artifactId + '\'' +
-                ", name='" + name + '\'' +
+                "name='" + name + '\'' +
+                ", repository='" + repository + '\'' +
                 '}';
     }
 }
