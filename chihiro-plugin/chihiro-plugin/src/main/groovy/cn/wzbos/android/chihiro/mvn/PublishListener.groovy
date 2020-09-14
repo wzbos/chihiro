@@ -71,7 +71,7 @@ class PublishListener implements TaskExecutionListener, BuildListener {
     void buildFinished(BuildResult result) {
 
         def projectName = result.gradle.rootProject.name
-        if (result.failure == null) {
+        if (result.failure == null && archives.size() > 0) {
             println("\033[32m[Chihiro] uploadArchives complete!\033[0m")
             if (settings != null && settings.wechat_key != null && settings.wechat_key.length() > 0) {
                 String content = "### Publish <font color=\\\"#FF0000\\\">${projectName}</font> Success!";
