@@ -111,6 +111,26 @@ MAVEN_PWD=xxx
 ./gradlew clean assembleRelease uploadArchives --info
 ```
 
+#### 1、微信通知
+
+在 chihiro.gralde 文件中设置 wechat_key 即可通过微信机器人发送消息到群
+
+```gradle
+/**
+ * Chihiro-Plugin setting
+ * github:https://github.com/wzbos/chihiro
+ */
+chihiro {
+    //微信机器人key
+    wechat_key = "xxxx-xxx-xxxx-xxx"
+}
+```
+
+企业微信：
+<p> 
+<img src="images/WeChat.png" height="200"/>
+</p>
+
 ### 四、多组件工程调试
 
 我们在开发组件中可能依赖一个同时处于开发阶段的另一个工程内的组件，常见的开发形式是另一个工程通过不停的发布SNAPSHOT版本然后本工程不停的拉取，
@@ -211,4 +231,5 @@ dependencies {
 
 #### 5、同步工程
 点击 Android Studio -> File -> Sync Project with Gradle Files 同步整个工程即可看到
+
 
