@@ -1,5 +1,6 @@
 package cn.wzbos.android.chihiro.mvn
 
+import cn.wzbos.android.chihiro.settings.ChihiroSettings
 import org.gradle.api.Plugin
 import org.gradle.api.Project
 import org.gradle.api.artifacts.maven.MavenDeployment
@@ -11,9 +12,18 @@ import org.gradle.api.tasks.javadoc.Javadoc
  * Created by wuzongbo on 2020/09/02.
  */
 class AndroidMvnPlugin implements Plugin<Project> {
+    static PublishListener uploadArchivesListener = null
 
     private static boolean isReleaseBuild(String ver) {
         return !ver.contains("SNAPSHOT")
+    }
+
+    private static String getUrl(Project project, String url) {
+        if (url.toLowerCase().startsWith("http")) {
+            return url
+        } else {
+            return project.uri(url).toString()
+        }
     }
 
     @Override
@@ -24,6 +34,16 @@ class AndroidMvnPlugin implements Plugin<Project> {
 
         project.apply plugin: 'maven'
         project.apply plugin: 'signing'
+
+        ChihiroSettings chihiroSettings = project.extensions.getByName('chihiro')
+
+        if (uploadArchivesListener == null) {
+            uploadArchivesListener = new PublishListener(chihiroSettings)
+        } else {
+            project.gradle.removeListener(uploadArchivesListener)
+        }
+        project.gradle.addListener(uploadArchivesListener)
+
 
         project.afterEvaluate {
             project.uploadArchives {
@@ -36,12 +56,16 @@ class AndroidMvnPlugin implements Plugin<Project> {
                         pom.version = project.PROJ_VERSION
 
                         if (!isReleaseBuild(project.PROJ_VERSION)) {
-                            snapshotRepository(url: project.MAVEN_SNAPSHOTS_URL) {
-                                authentication(userName: project.MAVEN_USERNAME, password: project.MAVEN_PWD)
+                            snapshotRepository(url: getUrl(project, project.MAVEN_SNAPSHOTS_URL)) {
+                                if (project.hasProperty("MAVEN_USERNAME") && project.hasProperty("MAVEN_PWD")) {
+                                    authentication(userName: project.MAVEN_USERNAME, password: project.MAVEN_PWD)
+                                }
                             }
                         } else {
-                            repository(url: project.MAVEN_RELEASE_URL) {
-                                authentication(userName: project.MAVEN_USERNAME, password: project.MAVEN_PWD)
+                            repository(url: getUrl(project, project.MAVEN_RELEASE_URL)) {
+                                if (project.hasProperty("MAVEN_USERNAME") && project.hasProperty("MAVEN_PWD")) {
+                                    authentication(userName: project.MAVEN_USERNAME, password: project.MAVEN_PWD)
+                                }
                             }
                         }
 
@@ -69,19 +93,10 @@ class AndroidMvnPlugin implements Plugin<Project> {
                             pom.dependencies.forEach { dep ->
                                 if ("unspecified".equalsIgnoreCase(dep.getVersion())) {
                                     try {
-                                        File gradlePropertiesFile = new File("${project.projectDir.parent}/$dep.artifactId/gradle.properties")
-                                        println(">>>> dep:$dep")
-                                        println(">>>> file:${gradlePropertiesFile.path}")
-                                        if (!gradlePropertiesFile.exists()) {
-                                            throw new FileNotFoundException("Maven配置文件不存在，请添加配置！\nfile:${gradlePropertiesFile.path}")
-                                        }
-                                        Properties properties = new Properties()
-                                        properties.load(new FileInputStream(gradlePropertiesFile))
-                                        def mGroup = properties.getProperty("PROJ_GROUP")
-                                        def mVersion = properties.getProperty("PROJ_VERSION")
-                                        println("dependencies => $mGroup:$dep.artifactId:$mVersion")
-                                        dep.setGroupId(mGroup)
-                                        dep.setVersion(mVersion)
+                                        MvnConfig mvnConfig = MvnConfig.load(project, dep.artifactId)
+                                        println("[Chihiro] dependencies => ${mvnConfig.group}:$mvnConfig.artifactId:$mvnConfig.version")
+                                        dep.setGroupId(mvnConfig.artifactId)
+                                        dep.setVersion(mvnConfig.version)
                                     } catch (Exception e) {
                                         e.printStackTrace()
                                     }
@@ -90,6 +105,7 @@ class AndroidMvnPlugin implements Plugin<Project> {
                         }
                     }
                 }
+
             }
 
             project.signing {
@@ -98,7 +114,6 @@ class AndroidMvnPlugin implements Plugin<Project> {
             }
 
             //生成文档注释
-
             project.task(type: Javadoc, "androidJavadocs") {
                 failOnError = false
                 source = project.android.sourceSets.main.java.srcDirs
@@ -135,10 +150,10 @@ class AndroidMvnPlugin implements Plugin<Project> {
             }
 
             project.task("javaDocBuild") {
-                // 生成对应的Sources类
                 project.androidSourcesJar
                 project.androidJavadocsJar
             }
         }
     }
+
 }

@@ -79,14 +79,16 @@ class ChihiroPlugin implements Plugin<Project> {
     }
 
     private void applyMvnPlugin() {
-        pro.afterEvaluate {
-            if (new File(pro.projectDir.path + "/gradle.properties").exists()) {
-                if (pro.plugins.hasPlugin('com.android.library')) {
-                    log("Mvn:${pro.name} ==> AndroidMvnPlugin")
-                    pro.apply plugin: AndroidMvnPlugin
-                } else if (pro.plugins.hasPlugin('java')) {
-                    log("Mvn:${pro.name} ==> JavaMvnPlugin")
-                    pro.apply plugin: JavaMvnPlugin
+        if (settings != null && settings.maven) {
+            pro.afterEvaluate {
+                if (new File(pro.projectDir.path + "/gradle.properties").exists()) {
+                    if (pro.plugins.hasPlugin('com.android.library')) {
+                        log("Mvn:${pro.name} ==> AndroidMvnPlugin")
+                        pro.apply plugin: AndroidMvnPlugin
+                    } else if (pro.plugins.hasPlugin('java')) {
+                        log("Mvn:${pro.name} ==> JavaMvnPlugin")
+                        pro.apply plugin: JavaMvnPlugin
+                    }
                 }
             }
         }

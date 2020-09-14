@@ -1,5 +1,6 @@
 package cn.wzbos.android.chihiro.mvn
 
+
 import org.gradle.api.Plugin
 import org.gradle.api.Project
 import org.gradle.api.artifacts.maven.MavenDeployment
@@ -12,6 +13,14 @@ class JavaMvnPlugin implements Plugin<Project> {
 
     static boolean isReleaseBuild(String ver) {
         return !ver.contains("SNAPSHOT")
+    }
+
+    private static String getUrl(Project project, String url) {
+        if (url.toLowerCase().startsWith("http")) {
+            return url
+        } else {
+            return project.uri(url).toString()
+        }
     }
 
     @Override
@@ -34,12 +43,16 @@ class JavaMvnPlugin implements Plugin<Project> {
                         pom.version = project.PROJ_VERSION
 
                         if (!isReleaseBuild(project.PROJ_VERSION)) {
-                            snapshotRepository(url: project.MAVEN_SNAPSHOTS_URL) {
-                                authentication(userName: project.MAVEN_USERNAME, password: project.MAVEN_PWD)
+                            snapshotRepository(url: getUrl(project, project.MAVEN_SNAPSHOTS_URL)) {
+                                if (project.hasProperty("MAVEN_USERNAME") && project.hasProperty("MAVEN_PWD")) {
+                                    authentication(userName: project.MAVEN_USERNAME, password: project.MAVEN_PWD)
+                                }
                             }
                         } else {
-                            repository(url: project.MAVEN_RELEASE_URL) {
-                                authentication(userName: project.MAVEN_USERNAME, password: project.MAVEN_PWD)
+                            repository(url: getUrl(project, project.MAVEN_RELEASE_URL)) {
+                                if (project.hasProperty("MAVEN_USERNAME") && project.hasProperty("MAVEN_PWD")) {
+                                    authentication(userName: project.MAVEN_USERNAME, password: project.MAVEN_PWD)
+                                }
                             }
                         }
 

@@ -165,6 +165,10 @@ group为组件包名(gradle.properties文件中的PROJ_GROUP值)
 chihiro {
     // true: 打印调式日志,false: 不打印调式日志
     log = true
+    // true：开启Maven上传功能，false关闭maven上传功能
+    maven = true
+    //微信机器人key
+    wechat_key = "xxxx-xxx-xxxx-xxx"
     // 设置联调工程
     projects = [[
                         // 工程文件夹名称（注意：需要将此工程放入依赖工程同一级目录）

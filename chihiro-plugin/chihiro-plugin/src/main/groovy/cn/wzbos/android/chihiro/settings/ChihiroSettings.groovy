@@ -7,11 +7,19 @@ package cn.wzbos.android.chihiro.settings
 class ChihiroSettings {
     final static String GRADLE_NAME = "chihiro.gradle"
 
-    private boolean log = false
+    boolean log = false
     /**
      * 千寻插件工程配置集合
      */
-    private List<ChihiroProject> projects
+    List<ChihiroProject> projects
+    /**
+     * true：开启Maven上传功能，false关闭maven上传功能
+     */
+    boolean maven = false
+    /**
+     * 企业微信机器人key
+     */
+    String wechat_key
 
     boolean isDebug(String projectName) {
         if (projects == null)
@@ -46,22 +54,6 @@ class ChihiroSettings {
             }
         }
         return null
-    }
-
-    List<ChihiroProject> getProjects() {
-        return projects
-    }
-
-    void setProjects(List<ChihiroProject> projects) {
-        this.projects = projects
-    }
-
-    boolean getLog() {
-        return log
-    }
-
-    void setLog(boolean log) {
-        this.log = log
     }
 
 
