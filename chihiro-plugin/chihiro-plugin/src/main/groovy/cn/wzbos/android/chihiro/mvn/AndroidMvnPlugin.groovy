@@ -95,7 +95,7 @@ class AndroidMvnPlugin implements Plugin<Project> {
                                     try {
                                         MvnConfig mvnConfig = MvnConfig.load(project, dep.artifactId)
                                         println("[Chihiro] dependencies => ${mvnConfig.group}:$mvnConfig.artifactId:$mvnConfig.version")
-                                        dep.setGroupId(mvnConfig.artifactId)
+                                        dep.setGroupId(mvnConfig.group)
                                         dep.setVersion(mvnConfig.version)
                                     } catch (Exception e) {
                                         e.printStackTrace()
