@@ -11,7 +11,7 @@ import org.gradle.api.tasks.javadoc.Javadoc
  * Maven 组件上传(Android Library)
  * Created by wuzongbo on 2020/09/02.
  */
-class AndroidMvnPlugin implements Plugin<Project> {
+class MvnPlugin implements Plugin<Project> {
     static PublishListener uploadArchivesListener = null
 
     private static boolean isReleaseBuild(String ver) {
@@ -28,8 +28,8 @@ class AndroidMvnPlugin implements Plugin<Project> {
 
     @Override
     void apply(Project project) {
-        if (!project.plugins.hasPlugin('com.android.library')) {
-            throw new IllegalStateException('插件仅支持 Android Library!')
+        if (!project.plugins.hasPlugin('com.android.library') && !project.plugins.hasPlugin('java')) {
+            throw new IllegalStateException('插件仅支持 Android Library 与 Java Library!')
         }
 
         project.apply plugin: 'maven'
@@ -113,45 +113,53 @@ class AndroidMvnPlugin implements Plugin<Project> {
                 sign project.configurations.archives
             }
 
-            //生成文档注释
-            project.task(type: Javadoc, "androidJavadocs") {
-                failOnError = false
-                source = project.android.sourceSets.main.java.srcDirs
-                ext.androidJar = "${project.android.sdkDirectory}/platforms/${project.android.compileSdkVersion}/android.jar"
-                options {
-                    encoding 'utf-8'
-                    charSet 'utf-8'
-                    links 'http://docs.oracle.com/javase/7/docs/api/'
-                    linksOffline "https://developer.android.com/reference", "${project.android.sdkDirectory}/docs/reference"
+
+            if (project.hasProperty("android")) {
+                //将源码打包
+                project.task(type: Jar, "sourcesJar") {
+                    classifier = 'sources'
+                    from project.android.sourceSets.main.java.srcDirs
                 }
-                exclude '**/BuildConfig.java'
-                exclude '**/R.java'
-                options.encoding = 'utf-8'
-//        classpath += files(ext.androidJar)
-                classpath += project.files(project.android.getBootClasspath().join(File.pathSeparator))
-//        classpath += configurations.javadocDeps
+
+                //生成文档注释
+                project.task(type: Javadoc, "javadoc") {
+                    failOnError = false
+                    source = project.android.sourceSets.main.java.srcDirs
+                    ext.androidJar = "${project.android.sdkDirectory}/platforms/${project.android.compileSdkVersion}/android.jar"
+                    options {
+                        encoding 'utf-8'
+                        charSet 'utf-8'
+                        links 'http://docs.oracle.com/javase/7/docs/api/'
+                        linksOffline "https://developer.android.com/reference", "${project.android.sdkDirectory}/docs/reference"
+                    }
+                    exclude '**/BuildConfig.java'
+                    exclude '**/R.java'
+                    options.encoding = 'utf-8'
+                    classpath += project.files(project.android.getBootClasspath().join(File.pathSeparator))
+                }
+
+            } else {
+                // Java libraries
+                project.task(type: Jar, dependsOn: project.getTasksByName("classes", true), "sourcesJar") {
+                    classifier = 'sources'
+                    from project.sourceSets.main.allSource
+                }
             }
 
             //将文档打包成jar
-            project.task([type: Jar, dependsOn: project.getTasksByName("androidJavadocs", true)], "androidJavadocsJar") {
+            project.task([type: Jar, dependsOn: project.getTasksByName("javadoc", true)], "javadocJar") {
                 classifier = 'javadoc'
-                from project.androidJavadocs.destinationDir
-            }
-
-            //将源码打包
-            project.task(type: Jar, "androidSourcesJar") {
-                classifier = 'sources'
-                from project.android.sourceSets.main.java.srcDirs
+                from project.javadoc.destinationDir
             }
 
             project.artifacts {
-                archives project.androidSourcesJar
-                archives project.androidJavadocsJar
+                archives project.sourcesJar
+                archives project.javadocJar
             }
 
             project.task("javaDocBuild") {
-                project.androidSourcesJar
-                project.androidJavadocsJar
+                project.sourcesJar
+                project.javadocJar
             }
         }
     }

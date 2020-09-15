@@ -1,8 +1,7 @@
 package cn.wzbos.android.chihiro
 
 import cn.wzbos.android.chihiro.exception.ChihiroException
-import cn.wzbos.android.chihiro.mvn.AndroidMvnPlugin
-import cn.wzbos.android.chihiro.mvn.JavaMvnPlugin
+import cn.wzbos.android.chihiro.mvn.MvnPlugin
 import cn.wzbos.android.chihiro.settings.ChihiroSettings
 import org.gradle.api.Plugin
 import org.gradle.api.Project
@@ -82,12 +81,8 @@ class ChihiroPlugin implements Plugin<Project> {
         if (settings != null && settings.maven) {
             pro.afterEvaluate {
                 if (new File(pro.projectDir.path + "/gradle.properties").exists()) {
-                    if (pro.plugins.hasPlugin('com.android.library')) {
-                        log("Mvn:${pro.name} ==> AndroidMvnPlugin")
-                        pro.apply plugin: AndroidMvnPlugin
-                    } else if (pro.plugins.hasPlugin('java')) {
-                        log("Mvn:${pro.name} ==> JavaMvnPlugin")
-                        pro.apply plugin: JavaMvnPlugin
+                    if (pro.plugins.hasPlugin('com.android.library') || pro.plugins.hasPlugin('java')) {
+                        pro.apply plugin: MvnPlugin
                     }
                 }
             }
