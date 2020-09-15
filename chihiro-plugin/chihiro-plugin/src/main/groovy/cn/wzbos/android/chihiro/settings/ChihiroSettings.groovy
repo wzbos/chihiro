@@ -38,10 +38,9 @@ class ChihiroSettings {
             return null
 
         for (ChihiroProject project : projects) {
-            if (project.name.equalsIgnoreCase(rootProjectName)) {
-                println("[Chihiro] getLocalProjectName,is root project!")
+            if (!project.debug)
                 return null
-            }
+
             if (project.modules == null)
                 return null
 
