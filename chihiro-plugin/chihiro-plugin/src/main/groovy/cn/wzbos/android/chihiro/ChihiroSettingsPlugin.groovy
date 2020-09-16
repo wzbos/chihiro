@@ -1,9 +1,12 @@
 package cn.wzbos.android.chihiro
 
-
-import cn.wzbos.android.chihiro.settings.ChihiroModule
+import cn.wzbos.android.chihiro.exception.ChihiroException
+import cn.wzbos.android.chihiro.mvn.MvnConfig
 import cn.wzbos.android.chihiro.settings.ChihiroProject
 import cn.wzbos.android.chihiro.settings.ChihiroSettings
+import cn.wzbos.android.chihiro.utils.GitUtils
+import cn.wzbos.android.chihiro.utils.Logger
+import cn.wzbos.android.chihiro.utils.TextUtils
 import org.gradle.api.Plugin
 import org.gradle.api.initialization.Settings
 
@@ -15,51 +18,71 @@ class ChihiroSettingsPlugin implements Plugin<Settings> {
 
     @Override
     void apply(Settings settings) {
-        ChihiroSettings extension = settings.extensions.create('chihiro', ChihiroSettings)
-
-        //加载本地配置文件
-        def debugGradleFile = settings.rootDir.path + File.separator + ChihiroSettings.GRADLE_NAME
-        println("debugGradleFile:${debugGradleFile}")
-
-        if (new File(debugGradleFile).exists()) {
-            settings.apply from: debugGradleFile
-        }
-
-        if (extension == null) {
+        ChihiroSettings chihiroSettings = ChihiroSettings.get(settings)
+        if (chihiroSettings == null) {
             return
         }
-        println("extension:${extension}")
-
-        if (extension.projects == null)
+        Logger.d("${chihiroSettings}")
+        if (chihiroSettings.projects == null) {
             return
+        }
 
-        for (ChihiroProject project in extension.projects) {
-            println("ChihiroProject:${project}")
-            def projectName = project.name
-            if (!project.debug)
+        for (Map.Entry<String, ChihiroProject> kv in chihiroSettings.projects.entrySet()) {
+            def projectName = kv.key
+            def chihiroProject = kv.value
+            if (!chihiroProject.debug)
                 continue
 
-            def prj_dir = new File("${settings.rootDir.getParentFile().path}/${projectName}")
-            def exist = prj_dir.exists()
+            def directory = chihiroProject.directory
+            if (TextUtils.isEmpty(directory))
+                directory = "${settings.rootDir.getParentFile().path}/${projectName}"
+
+            def file = new File(directory)
+            def exist = file.exists()
             if (!exist) {
-                println("项目 $prj_dir 不存在！")
-                continue
-            }
-            println("--------------------------------------------------------------")
-            println("include $projectName")
-            settings.include "$projectName"
-            println("project(\":${projectName}\").projectDir = ${prj_dir}")
-            settings.project(":${projectName}").projectDir = prj_dir
-            if (project.modules != null) {
-                println("--------------------------[MODULES]---------------------------")
-                for (ChihiroModule m in project.modules) {
-                    println("include :${projectName}:${m.name}")
-                    settings.include ":${projectName}:${m.name}"
+                if (TextUtils.isEmpty(chihiroProject.git)) {
+                    throw new ChihiroException("[Chihiro] 项目 \"$file\" 不存在,请检查 ${ChihiroSettings.GRADLE_NAME} 配置!")
+                }
+
+                if (GitUtils.clone(chihiroProject.git, chihiroProject.branch, directory) > 0) {
+                    throw new ChihiroException("[Chihiro] clone failed!")
+                } else {
+                    Logger.w("clone success!\n")
                 }
             }
-            println("--------------------------------------------------------------")
+            Logger.i("--------------------------------------------------------------")
+            Logger.i("include $projectName")
+            settings.include "$projectName"
+            Logger.i("project(\":${projectName}\").projectDir = ${file}")
 
+            settings.project(":${projectName}").projectDir = file
+
+            def files = file.listFiles()
+            if (files != null) {
+                Logger.i("--------------------------[MODULES]---------------------------")
+                for (File f : files) {
+                    if (f.directory) {
+                        def gradleSettingsPath = f.getPath() + File.separator + "gradle.properties"
+                        if (new File(gradleSettingsPath).exists()) {
+                            MvnConfig mvnConfig = MvnConfig.load(gradleSettingsPath)
+                            if (mvnConfig != null && mvnConfig.isValid()) {
+                                def moduleName = ":$projectName:${f.name}"
+                                Logger.i("include ${moduleName}")
+                                settings.include moduleName
+
+                                if (chihiroProject.modules == null) {
+                                    chihiroProject.modules = new ArrayList<>()
+                                }
+                                chihiroProject.modules.add(mvnConfig)
+                            }
+                        }
+                    }
+                }
+                Logger.i("--------------------------------------------------------------\n")
+            }
         }
+        chihiroSettings.save(settings)
     }
+
 
 }

@@ -1,7 +1,8 @@
 package cn.wzbos.android.chihiro.mvn
 
-import cn.wzbos.android.chihiro.WeChat
-import cn.wzbos.android.chihiro.settings.ChihiroSettings
+import cn.wzbos.android.chihiro.utils.WebHookUtils
+import cn.wzbos.android.chihiro.utils.Logger
+import cn.wzbos.android.chihiro.utils.TextUtils
 import org.gradle.BuildListener
 import org.gradle.BuildResult
 import org.gradle.api.Task
@@ -10,23 +11,17 @@ import org.gradle.api.initialization.Settings
 import org.gradle.api.invocation.Gradle
 import org.gradle.api.tasks.TaskState
 
-
 /**
  * 组件发布监听
  * Created by wuzongbo on 2020/09/14.
  */
-class PublishListener implements TaskExecutionListener, BuildListener {
+class MvnListener implements TaskExecutionListener, BuildListener {
 
-    ChihiroSettings settings
-
-    PublishListener(ChihiroSettings settings) {
-        this.settings = settings
-    }
 
     @Override
     void beforeExecute(Task task) {
         if ("uploadArchives".equalsIgnoreCase(task.name)) {
-            task.logger.info("[Chihiro] ${task.project.name} Publish...")
+            Logger.i("${task.project.name} Publish...")
         }
     }
 
@@ -37,11 +32,11 @@ class PublishListener implements TaskExecutionListener, BuildListener {
         if (task.project.plugins.hasPlugin('maven') && "uploadArchives".equalsIgnoreCase(task.name)) {
             if (taskState.executed) {
                 if (taskState.failure == null) {
-                    task.logger.warn("\033[32m[Chihiro] uploadArchives ${task.project.name} success!\033[0m")
+                    Logger.i("uploadArchives ${task.project.name} success!")
                     MvnConfig mvnConfig = MvnConfig.load(task.project)
                     archives.add("<font color=\\\"#0083FF\\\">${mvnConfig.group}</font>:<font color=\\\"info\\\">${mvnConfig.artifactId}</font>:<font color=\\\"#FF0000\\\">${mvnConfig.version}</font>")
                 } else {
-                    task.logger.error("\033[31m[Chihiro] uploadArchives ${task.project.name} failed!\033[0m")
+                    Logger.e("uploadArchives ${task.project.name} failed!")
                 }
             }
         }
@@ -69,11 +64,12 @@ class PublishListener implements TaskExecutionListener, BuildListener {
 
     @Override
     void buildFinished(BuildResult result) {
-
         def projectName = result.gradle.rootProject.name
         if (result.failure == null && archives.size() > 0) {
-            println("\033[32m[Chihiro] uploadArchives complete!\033[0m")
-            if (settings != null && settings.wechat_key != null && settings.wechat_key.length() > 0) {
+            Logger.i("publish complete!")
+
+            def settings = result.gradle.ext.chihiroSettings
+            if (settings != null && !TextUtils.isEmpty(settings.wechat_key)) {
                 String content = "### Publish <font color=\\\"#FF0000\\\">${projectName}</font> Success!";
                 content += "\n- Builder：${gitUsername}"
                 content += "\n- Branch：${gitBranch}"
@@ -83,7 +79,7 @@ class PublishListener implements TaskExecutionListener, BuildListener {
                         content += "\n> ${archive}"
                     }
                 }
-                WeChat.sendNotify(result.gradle.rootProject, settings.wechat_key, content)
+                WebHookUtils.sendToWeChat(result.gradle.rootProject, settings.wechat_key, content)
             }
             archives.clear()
         }

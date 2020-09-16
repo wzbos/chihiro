@@ -1,0 +1,21 @@
+include ':library3'
+include ':library2'
+include ':library1'
+rootProject.name = 'sample-sdk'
+
+
+buildscript {
+    repositories {
+        maven { url uri("${System.getenv('HOME')}/repository/maven-snapshots") }
+        jcenter()
+    }
+    configurations.all {
+        resolutionStrategy.cacheChangingModulesFor 0, 'seconds'
+    }
+    dependencies {
+        classpath "cn.wzbos.android:chihiro-plugin:1.0.4"
+    }
+}
+
+
+apply plugin: 'chihiro-settings'

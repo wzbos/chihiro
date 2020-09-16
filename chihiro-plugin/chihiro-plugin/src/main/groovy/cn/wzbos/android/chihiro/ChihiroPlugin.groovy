@@ -3,6 +3,7 @@ package cn.wzbos.android.chihiro
 import cn.wzbos.android.chihiro.exception.ChihiroException
 import cn.wzbos.android.chihiro.mvn.MvnPlugin
 import cn.wzbos.android.chihiro.settings.ChihiroSettings
+import cn.wzbos.android.chihiro.utils.Logger
 import org.gradle.api.Plugin
 import org.gradle.api.Project
 import org.gradle.api.UnknownProjectException
@@ -18,7 +19,7 @@ import org.gradle.api.internal.artifacts.repositories.DefaultMavenArtifactReposi
  */
 class ChihiroPlugin implements Plugin<Project> {
 
-    ChihiroSettings settings;
+    ChihiroSettings settings
     Project pro
 
     @Override
@@ -27,17 +28,8 @@ class ChihiroPlugin implements Plugin<Project> {
         if (!pro.plugins.hasPlugin('com.android.application') && !pro.plugins.hasPlugin('com.android.library') && !pro.plugins.hasPlugin('java')) {
             throw new IllegalStateException('插件仅支持 Android 或 Java Library!')
         }
+        settings = ChihiroSettings.get(pro)
 
-        settings = pro.extensions.create('chihiro', ChihiroSettings)
-
-        //导入配置文件(以rootProject配置为准)
-        def debugGradleFile = pro.rootDir.path + File.separator + ChihiroSettings.GRADLE_NAME
-        log("import debug.gradle:$debugGradleFile")
-        if (new File(debugGradleFile).exists()) {
-            pro.apply from: debugGradleFile
-        }
-
-        log("settings: ${settings}")
         addMavenRepositories()
         cacheChangingModulesTime(0)
         addDynamicDSLMethod()
@@ -45,28 +37,20 @@ class ChihiroPlugin implements Plugin<Project> {
         replaceDependency()
     }
 
-    void log(String msg) {
-        if (settings != null && settings.log)
-            println("[Chihiro] $msg")
-    }
 
     private void addDynamicDSLMethod() {
         pro.rootProject.ext {
             dynamic = { path ->
                 def parentPrjName = pro.getParent().name
-                log("dynamic, project=$parentPrjName, path=$path")
+                Logger.d("dynamic, project=$parentPrjName, path=$path")
                 if (settings != null && settings.isDebug(parentPrjName)) {
                     try {
-                        log("dynamic($path) ==> project(:${parentPrjName}${path})")
+                        Logger.i("dynamic($path) ==> project(:${parentPrjName}${path})")
                         return pro.project(":${parentPrjName}${path}")
                     } catch (UnknownProjectException exception) {
                         throw new ChihiroException("组件\"${parentPrjName}${path}\"不存在！", exception)
                     }
                 } else {
-                    /*
-                     * 提示：如果此处报错，则是因为参数问题,请参考如下格式
-                     * implementation dynamic(":library")
-                     */
                     try {
                         return pro.project(path)
                     } catch (UnknownProjectException exception) {
@@ -97,10 +81,14 @@ class ChihiroPlugin implements Plugin<Project> {
                         if (dependency.requested instanceof ModuleComponentSelector) {
                             ModuleComponentSelector selector = dependency.requested
                             if (settings != null) {
-                                String prjName = settings.getLocalProjectName(pro.rootProject.project.name, selector.group, selector.module)
-                                if (prjName != null && prjName.length() > 0) {
-                                    log("${selector} ==> project(:${prjName}:${selector.module})")
-                                    dependency.useTarget pro.project(":${prjName}:${selector.module}")
+                                try {
+                                    String prjName = settings.getLocalProjectName(selector.group, selector.module)
+                                    if (prjName != null && prjName.length() > 0) {
+                                        Logger.i("${selector} ==> project(:${prjName}:${selector.module})")
+                                        dependency.useTarget pro.project(":${prjName}:${selector.module}")
+                                    }
+                                } catch (Exception e) {
+                                    throw new ChihiroException("replaceDependency failed!", e)
                                 }
                             }
                         }
@@ -122,7 +110,7 @@ class ChihiroPlugin implements Plugin<Project> {
         for (int i = 0; i < count; i++) {
             ArtifactRepository repository = pro.repositories.get(i)
             if (repository instanceof MavenArtifactRepository) {
-                DefaultMavenArtifactRepository mvnRepository = (DefaultMavenArtifactRepository) repository;
+                DefaultMavenArtifactRepository mvnRepository = (DefaultMavenArtifactRepository) repository
                 if (mvnRepository.url.toString().equalsIgnoreCase(mvnUrl)) {
                     return
                 }
@@ -130,11 +118,17 @@ class ChihiroPlugin implements Plugin<Project> {
         }
 
         MavenArtifactRepository mavenRepository = pro.repositories.maven {
-            url mvnUrl
+            if (mvnUrl.toLowerCase().startsWith("http")) {
+                url mvnUrl
+            } else {
+                url pro.uri(mvnUrl)
+            }
         }
-        log("addMavenRepositories,mvnUrl:$mvnUrl")
+
         pro.repositories.remove(mavenRepository)
         pro.repositories.add(0, mavenRepository)
+
+        Logger.i("add maven repository, ${mavenRepository.url}")
     }
 
     void cacheChangingModulesTime(int sec) {

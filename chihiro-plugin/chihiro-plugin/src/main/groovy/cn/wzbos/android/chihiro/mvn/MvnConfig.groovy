@@ -1,6 +1,7 @@
 package cn.wzbos.android.chihiro.mvn
 
 import org.gradle.api.Project
+import cn.wzbos.android.chihiro.utils.TextUtils
 
 /**
  * Maven 配置
@@ -83,5 +84,30 @@ class MvnConfig {
         developerId = properties.getProperty("DEVELOPER_ID")
         developerName = properties.getProperty("DEVELOPER_NAME")
         developerEmail = properties.getProperty("DEVELOPER_EMAIL")
+    }
+
+    boolean isValid() {
+        return !TextUtils.isEmpty(group) && !TextUtils.isEmpty(artifactId)
+    }
+
+
+    @Override
+    String toString() {
+        return "MvnConfig{" +
+                "name='" + name + '\'' +
+                ", group='" + group + '\'' +
+                ", artifactId='" + artifactId + '\'' +
+                ", version='" + version + '\'' +
+                ", versionCode='" + versionCode + '\'' +
+                ", POMName='" + POMName + '\'' +
+                ", description='" + description + '\'' +
+                ", packaging='" + packaging + '\'' +
+                ", WebsiteUrl='" + WebsiteUrl + '\'' +
+                ", issueTrackerUrl='" + issueTrackerUrl + '\'' +
+                ", vcsUrl='" + vcsUrl + '\'' +
+                ", developerId='" + developerId + '\'' +
+                ", developerName='" + developerName + '\'' +
+                ", developerEmail='" + developerEmail + '\'' +
+                '}';
     }
 }

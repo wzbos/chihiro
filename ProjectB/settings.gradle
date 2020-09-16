@@ -1,0 +1,16 @@
+include ':app'
+buildscript {
+    repositories {
+        maven { url uri("${System.getenv('HOME')}/repository/maven-snapshots") }
+        jcenter()
+    }
+    configurations.all {
+        resolutionStrategy.cacheChangingModulesFor 0, 'seconds'
+    }
+
+    dependencies {
+        classpath "cn.wzbos.android:chihiro-plugin:1.0.4"
+    }
+}
+
+apply plugin: 'chihiro-settings'

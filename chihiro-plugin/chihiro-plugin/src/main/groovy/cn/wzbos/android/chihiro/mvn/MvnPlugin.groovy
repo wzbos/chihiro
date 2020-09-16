@@ -1,6 +1,6 @@
 package cn.wzbos.android.chihiro.mvn
 
-import cn.wzbos.android.chihiro.settings.ChihiroSettings
+import cn.wzbos.android.chihiro.utils.Logger
 import org.gradle.api.Plugin
 import org.gradle.api.Project
 import org.gradle.api.artifacts.maven.MavenDeployment
@@ -12,7 +12,7 @@ import org.gradle.api.tasks.javadoc.Javadoc
  * Created by wuzongbo on 2020/09/02.
  */
 class MvnPlugin implements Plugin<Project> {
-    static PublishListener uploadArchivesListener = null
+    static MvnListener uploadArchivesListener = null
 
     private static boolean isReleaseBuild(String ver) {
         return !ver.contains("SNAPSHOT")
@@ -35,10 +35,8 @@ class MvnPlugin implements Plugin<Project> {
         project.apply plugin: 'maven'
         project.apply plugin: 'signing'
 
-        ChihiroSettings chihiroSettings = project.extensions.getByName('chihiro')
-
         if (uploadArchivesListener == null) {
-            uploadArchivesListener = new PublishListener(chihiroSettings)
+            uploadArchivesListener = new MvnListener()
         } else {
             project.gradle.removeListener(uploadArchivesListener)
         }
@@ -94,7 +92,7 @@ class MvnPlugin implements Plugin<Project> {
                                 if ("unspecified".equalsIgnoreCase(dep.getVersion())) {
                                     try {
                                         MvnConfig mvnConfig = MvnConfig.load(project, dep.artifactId)
-                                        println("[Chihiro] dependencies => ${mvnConfig.group}:$mvnConfig.artifactId:$mvnConfig.version")
+                                        Logger.i("dependencies => ${mvnConfig.group}:$mvnConfig.artifactId:$mvnConfig.version")
                                         dep.setGroupId(mvnConfig.group)
                                         dep.setVersion(mvnConfig.version)
                                     } catch (Exception e) {
