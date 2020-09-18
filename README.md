@@ -4,6 +4,8 @@
 
  [ ![Download](https://api.bintray.com/packages/wuzongbo/maven/chihiro-plugin/images/download.svg) ](https://bintray.com/wuzongbo/maven/chihiro-plugin/_latestVersion)
 
+[![Maven](https://img.shields.io/badge/jcenter-chihiro-green.svg?style=true)](https://jcenter.bintray.com/cn/wzbos/android/chihiro-plugin)
+
 ## 开发背景
 
 在Android组件化开发中，组件一般为一个独立的Git仓库工程，使用方需要引用组件一般以远程Maven依赖方式；当组件处在开发或调试阶段的时候，可能会频繁发布版本，为了不经常修改版本号开发人员一般将版本号命名为x.x.x-SNAPSHOT版本。
