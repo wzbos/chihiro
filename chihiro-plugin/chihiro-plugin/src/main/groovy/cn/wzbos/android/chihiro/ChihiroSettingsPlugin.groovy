@@ -45,7 +45,8 @@ class ChihiroSettingsPlugin implements Plugin<Settings> {
                 }
 
                 if (GitUtils.clone(chihiroProject.git, chihiroProject.branch, directory) > 0) {
-                    throw new ChihiroException("[Chihiro] clone failed!")
+                    Logger.e("clone failed!\n")
+                    return
                 } else {
                     Logger.w("clone success!\n")
                 }

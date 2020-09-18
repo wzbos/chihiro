@@ -1,11 +1,15 @@
 package cn.wzbos.android.chihiro.mvn
 
 import cn.wzbos.android.chihiro.utils.Logger
+import org.gradle.api.Action
 import org.gradle.api.Plugin
 import org.gradle.api.Project
 import org.gradle.api.artifacts.maven.MavenDeployment
+import org.gradle.api.plugins.MavenPlugin
 import org.gradle.api.tasks.bundling.Jar
 import org.gradle.api.tasks.javadoc.Javadoc
+import org.gradle.plugins.signing.SigningExtension
+import org.gradle.plugins.signing.SigningPlugin
 
 /**
  * Maven 组件上传(Android Library)
@@ -32,8 +36,8 @@ class MvnPlugin implements Plugin<Project> {
             throw new IllegalStateException('插件仅支持 Android Library 与 Java Library!')
         }
 
-        project.apply plugin: 'maven'
-        project.apply plugin: 'signing'
+        project.apply plugin: MavenPlugin
+        project.apply plugin: SigningPlugin
 
         if (uploadArchivesListener == null) {
             uploadArchivesListener = new MvnListener()
@@ -106,11 +110,10 @@ class MvnPlugin implements Plugin<Project> {
 
             }
 
-            project.signing {
-                required { isReleaseBuild(project.PROJ_VERSION) && gradle.taskGraph.hasTask("uploadArchives") }
-                sign project.configurations.archives
-            }
-
+            project.extensions.configure("signing", { t ->
+                t.required { isReleaseBuild(project.PROJ_VERSION) && project.gradle.taskGraph.hasTask("uploadArchives") }
+                t.sign project.configurations.archives
+            })
 
             if (project.hasProperty("android")) {
                 //将源码打包
