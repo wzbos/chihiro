@@ -9,7 +9,7 @@ buildscript {
     }
 
     dependencies {
-        classpath "cn.wzbos.android:chihiro-plugin:1.0.4"
+        classpath "cn.wzbos.android:chihiro-plugin:1.0.6"
     }
 }
 
