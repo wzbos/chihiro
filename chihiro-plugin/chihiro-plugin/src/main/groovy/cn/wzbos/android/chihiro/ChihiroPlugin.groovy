@@ -19,7 +19,7 @@ import org.gradle.api.internal.artifacts.repositories.DefaultMavenArtifactReposi
  */
 class ChihiroPlugin implements Plugin<Project> {
 
-    ChihiroSettings settings
+    def settings
     Project pro
 
     @Override

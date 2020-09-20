@@ -18,7 +18,7 @@ class ChihiroSettingsPlugin implements Plugin<Settings> {
 
     @Override
     void apply(Settings settings) {
-        ChihiroSettings chihiroSettings = ChihiroSettings.get(settings)
+        def chihiroSettings = ChihiroSettings.get(settings)
         if (chihiroSettings == null) {
             return
         }

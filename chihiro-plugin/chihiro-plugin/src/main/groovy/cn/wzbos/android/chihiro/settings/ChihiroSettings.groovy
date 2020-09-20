@@ -1,11 +1,9 @@
 package cn.wzbos.android.chihiro.settings
 
+
 import cn.wzbos.android.chihiro.mvn.MvnConfig
 import cn.wzbos.android.chihiro.utils.Logger
-import org.gradle.api.Project
 import org.gradle.api.initialization.Settings
-import org.gradle.api.plugins.ExtensionContainer
-import org.gradle.api.plugins.PluginAware
 
 /**
  * Chihiro Settings
@@ -65,27 +63,15 @@ class ChihiroSettings {
         return null
     }
 
-
-    static ChihiroSettings get(Settings settings) {
-        if (settings.gradle.ext.has("chihiroSettings")) {
-            return settings.gradle.ext.chihiroSettings
-        }
-        return get(settings, settings.extensions, settings.rootDir.path)
-    }
-
-    static ChihiroSettings get(Project project) {
-        if (project.gradle.ext.has("chihiroSettings")) {
-            return project.gradle.ext.chihiroSettings
+    static def get = { plugin ->
+        if (plugin.gradle.ext.has("chihiroSettings")) {
+            return plugin.gradle.ext.chihiroSettings
         }
 
-        return get(project, project.extensions, project.rootDir.path)
-    }
-
-    static ChihiroSettings get(PluginAware pluginAware, ExtensionContainer extensions, String rootPath) {
-        ChihiroSettings chihiroSettings = extensions.create('chihiro', ChihiroSettings)
-        def debugGradleFile = rootPath + File.separator + ChihiroSettings.GRADLE_NAME
+        ChihiroSettings chihiroSettings = plugin.extensions.create('chihiro', ChihiroSettings)
+        def debugGradleFile = plugin.rootDir.path + File.separator + GRADLE_NAME
         if (new File(debugGradleFile).exists()) {
-            pluginAware.apply from: debugGradleFile
+            plugin.apply from: debugGradleFile
         }
 
         Logger.d("$chihiroSettings")
