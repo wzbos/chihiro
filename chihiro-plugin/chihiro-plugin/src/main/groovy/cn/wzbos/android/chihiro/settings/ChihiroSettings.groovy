@@ -2,6 +2,10 @@ package cn.wzbos.android.chihiro.settings
 
 
 import cn.wzbos.android.chihiro.mvn.MvnConfig
+import cn.wzbos.android.chihiro.trigger.DingTalk
+import cn.wzbos.android.chihiro.trigger.TriggerRequest
+import cn.wzbos.android.chihiro.trigger.WeChat
+import cn.wzbos.android.chihiro.trigger.WebHook
 import cn.wzbos.android.chihiro.utils.Logger
 import org.gradle.api.initialization.Settings
 
@@ -21,10 +25,41 @@ class ChihiroSettings {
      * true：开启Maven上传功能，false关闭maven上传功能
      */
     boolean maven = false
+
+    WeChat wechat
+
+    DingTalk dingtalk
+
+    /**
+     * 其他
+     */
+    WebHook webhook
+
+    void webhook(Closure closure) {
+        webhook = new WebHook(closure)
+    }
+
     /**
      * 企业微信机器人key
      */
-    String wechat_key
+    @Deprecated
+    void wechat_key(String key) {
+        wechat = new WeChat("https://qyapi.weixin.qq.com/cgi-bin/webhook/send?key=$key")
+    }
+
+    /**
+     * 企业微信机器人
+     */
+    void wechat(Closure closure) {
+        wechat = new WeChat(closure)
+    }
+
+    /**
+     * 钉钉机器人
+     */
+    void dingtalk(Closure closure) {
+        dingtalk = new DingTalk(closure)
+    }
 
     boolean isDebug(String projectName) {
         if (projects == null)
@@ -47,14 +82,11 @@ class ChihiroSettings {
             ChihiroProject project = kv.value
 
             if (!project.debug)
-                return null
+                continue
 
-            if (project.modules == null)
-                return null
-
-            for (MvnConfig m : project.modules) {
-                if (m.group == group) {
-                    if (m.artifactId == module) {
+            if (project.modules != null) {
+                for (MvnConfig m : project.modules) {
+                    if (m.group == group && m.artifactId == module) {
                         return projectName
                     }
                 }
@@ -73,7 +105,7 @@ class ChihiroSettings {
         if (new File(debugGradleFile).exists()) {
             plugin.apply from: debugGradleFile
         }
-
+        Logger.isDebug = chihiroSettings.log
         Logger.d("$chihiroSettings")
         return chihiroSettings
     }
@@ -90,5 +122,20 @@ class ChihiroSettings {
                 "log=" + log +
                 ", projects=" + projects +
                 '}'
+    }
+
+    int send(String projectName, List<String> archives) {
+        TriggerRequest request = new TriggerRequest(projectName, archives)
+        int code = 0
+        if (wechat != null) {
+            code = wechat.send(request)
+        }
+        if (dingtalk != null) {
+            code = dingtalk.send(request)
+        }
+        if (webhook != null) {
+            code = webhook.send(request)
+        }
+        return code
     }
 }

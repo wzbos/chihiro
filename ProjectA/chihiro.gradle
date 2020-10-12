@@ -1,5 +1,4 @@
 chihiro {
     log = true
     maven = true
-    wechat_key = "fe8a1d2f-5260-4612-9c5d-881cc3f83830"
 }

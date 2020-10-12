@@ -27,4 +27,23 @@ class GitUtils {
     }
 
 
+    static String getGitBranch() {
+        try {
+            return 'git symbolic-ref --short -q HEAD'.execute().text.trim()
+        } catch (Exception e) {
+            e.printStackTrace()
+        }
+        return ""
+    }
+
+    static String getGitUsername() {
+        try {
+            return 'git config user.name'.execute().text.trim()
+        } catch (Exception e) {
+            e.printStackTrace()
+        }
+        return ""
+    }
+
+
 }

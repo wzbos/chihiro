@@ -13,7 +13,7 @@ buildscript {
         resolutionStrategy.cacheChangingModulesFor 0, 'seconds'
     }
     dependencies {
-        classpath "cn.wzbos.android:chihiro-plugin:1.0.6"
+        classpath "cn.wzbos.android:chihiro-plugin:1.0.8"
     }
 }
 

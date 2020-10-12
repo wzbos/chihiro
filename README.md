@@ -79,7 +79,7 @@
     - settings.gradle
 ```
 
-#### 1.在调用方ProjectA/settings.gradle，ProjectB/settings.gradle中添加如下配置
+#### 1.在调用方ProjectA/build.gradle，ProjectA/settings.gradle，ProjectB/build.gradle，ProjectB/settings.gradle中添加如下配置
 
 ```gradle
 buildscript {
@@ -235,13 +235,27 @@ dependencies {
 chihiro {
     log = true      //打印调式日志
     maven = true    //开启Maven上传功能
-    //wechat_key = "xxxx-xxxxx-xxxx-xxxx-xxxxx"     //微信机器人key
+    //微信机器人
+    wechat {
+        url "https://qyapi.weixin.qq.com/cgi-bin/webhook/send?key=微信机器人key"
+    }
+    //钉钉机器人
+    dingtalk {
+        url "https://oapi.dingtalk.com/robot/send?access_token=钉钉机器人Token"
+        secret "钉钉机器人secret"
+    }
+
+    //自定义webhook，详见高级功能说明
+    webhook {
+        url "https://xxx.com/api"
+    }
+
     projects = [
             "ProjectA": [
                     "directory": "../ProjectA",                 //ProjectA的相对路径
                     "debug"    : true,                          //ProjectA的加载开关
-                    //"git"      : "git@xxxxxxx:xxxx/xxx.git",  //ProjectA的Git仓库地址（directory文件不存在的时会自动从Git仓库拉取）
-                    //"branch"   : "develop"                    //ProjectA的代码分支
+                    "git"      : "git@xxxxxxx:xxxx/xxx.git",    //ProjectA的Git仓库地址（directory文件不存在的时会自动从Git仓库拉取）
+                    "branch"   : "develop"                      //ProjectA的代码分支
             ]
     ]
 }
@@ -267,6 +281,92 @@ chihiro {
 
 ### 7、等待通知
 
+微信通知样式：
 <p> 
-<img src="images/WeChat.png" height="200"/>
+<img src="images/WeChat.png" height="150"/>
 </p>
+
+
+钉钉通知样式：
+<p> 
+<img src="images/dingtalk.png" height="150"/>
+</p>
+
+
+## 高级功能
+
+### 自定义触发器
+
+通过在chihiro.gradle文件中增加如下配置即可自定义触发器
+
+```gralde
+//自定义webhook，详见高级功能说明
+webhook {
+    url "https://xxx.com/api"
+}
+```
+
+通过此配置chihiro插件在Maven组件发布完成后以POST的方式将结果数据调用此url地址，POST内容为json格式，具体格式如下
+
+以Demo为例：
+
+``` json
+{
+	"datetime": "2020-10-23 11:01:22",
+	"branch": "develop",
+	"archives": [{
+		"vcsUrl": "git@github.com:wzbos/chihiro.git",
+		"developerId": "wzbos",
+		"developerEmail": "sckoo@163.com",
+		"POMName": "library2",
+		"name": "library3",
+		"group": "cn.wzbos.chihiro.sample.sdk",
+		"GRADLE_FILE_NAME": "gradle.properties",
+		"websiteUrl": "https://github.com/wzbos/chihiro",
+		"valid": true,
+		"version": "1.0.0-SNAPSHOT",
+		"versionCode": "1",
+		"description": "sample library",
+		"issueTrackerUrl": "https://github.com/wzbos/chihiro/issues",
+		"developerName": "wuzongbo",
+		"packaging": "aar",
+		"artifactId": "library3"
+	}, {
+		"vcsUrl": "git@github.com:wzbos/chihiro.git",
+		"developerId": "wzbos",
+		"developerEmail": "sckoo@163.com",
+		"POMName": "library2",
+		"name": "library2",
+		"group": "cn.wzbos.chihiro.sample.sdk",
+		"GRADLE_FILE_NAME": "gradle.properties",
+		"websiteUrl": "https://github.com/wzbos/chihiro",
+		"valid": true,
+		"version": "1.0.0-SNAPSHOT",
+		"versionCode": "1",
+		"description": "sample library",
+		"issueTrackerUrl": "https://github.com/wzbos/chihiro/issues",
+		"developerName": "wuzongbo",
+		"packaging": "aar",
+		"artifactId": "library2"
+	}, {
+		"vcsUrl": "git@github.com:wzbos/chihiro.git",
+		"developerId": "wzbos",
+		"developerEmail": "sckoo@163.com",
+		"POMName": "library1",
+		"name": "library1",
+		"group": "cn.wzbos.chihiro.sample.sdk",
+		"GRADLE_FILE_NAME": "gradle.properties",
+		"websiteUrl": "https://github.com/wzbos/chihiro",
+		"valid": true,
+		"version": "1.0.0-SNAPSHOT",
+		"versionCode": "1",
+		"description": "sample library",
+		"issueTrackerUrl": "https://github.com/wzbos/chihiro/issues",
+		"developerName": "wuzongbo",
+		"packaging": "aar",
+		"artifactId": "library1"
+	}],
+	"username": "wuzongbo",
+	"project": "ProjectB"
+}
+```

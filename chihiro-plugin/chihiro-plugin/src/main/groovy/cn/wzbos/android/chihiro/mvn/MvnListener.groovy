@@ -1,8 +1,7 @@
 package cn.wzbos.android.chihiro.mvn
 
-import cn.wzbos.android.chihiro.utils.WebHookUtils
+
 import cn.wzbos.android.chihiro.utils.Logger
-import cn.wzbos.android.chihiro.utils.TextUtils
 import org.gradle.BuildListener
 import org.gradle.BuildResult
 import org.gradle.api.Task
@@ -17,7 +16,6 @@ import org.gradle.api.tasks.TaskState
  */
 class MvnListener implements TaskExecutionListener, BuildListener {
 
-
     @Override
     void beforeExecute(Task task) {
         if ("uploadArchives".equalsIgnoreCase(task.name)) {
@@ -25,7 +23,7 @@ class MvnListener implements TaskExecutionListener, BuildListener {
         }
     }
 
-    List<String> archives = new ArrayList<>()
+    List<MvnConfig> archives = new ArrayList<>()
 
     @Override
     void afterExecute(Task task, TaskState taskState) {
@@ -34,7 +32,7 @@ class MvnListener implements TaskExecutionListener, BuildListener {
                 if (taskState.failure == null) {
                     Logger.i("uploadArchives ${task.project.name} success!")
                     MvnConfig mvnConfig = MvnConfig.load(task.project)
-                    archives.add("<font color=\\\"#0083FF\\\">${mvnConfig.group}</font>:<font color=\\\"info\\\">${mvnConfig.artifactId}</font>:<font color=\\\"#FF0000\\\">${mvnConfig.version}</font>")
+                    archives.add(mvnConfig)
                 } else {
                     Logger.e("uploadArchives ${task.project.name} failed!")
                 }
@@ -67,39 +65,12 @@ class MvnListener implements TaskExecutionListener, BuildListener {
         def projectName = result.gradle.rootProject.name
         if (result.failure == null && archives.size() > 0) {
             Logger.i("publish complete!")
-
             def settings = result.gradle.ext.chihiroSettings
-            if (settings != null && !TextUtils.isEmpty(settings.wechat_key)) {
-                String content = "### Publish <font color=\\\"#FF0000\\\">${projectName}</font> Success!";
-                content += "\n- Builder：${gitUsername}"
-                content += "\n- Branch：${gitBranch}"
-                content += "\n- Time：${new Date().format("yyyy-MM-dd HH:mm:ss")}"
-                if (archives != null) {
-                    for (String archive : archives) {
-                        content += "\n> ${archive}"
-                    }
-                }
-                WebHookUtils.sendToWeChat(result.gradle.rootProject, settings.wechat_key, content)
+            if (settings != null) {
+                settings.send(projectName, archives)
             }
             archives.clear()
         }
     }
 
-    static String getGitBranch() {
-        try {
-            return 'git symbolic-ref --short -q HEAD'.execute().text.trim()
-        } catch (Exception e) {
-            e.printStackTrace()
-        }
-        return ""
-    }
-
-    static String getGitUsername() {
-        try {
-            return 'git config user.name'.execute().text.trim()
-        } catch (Exception e) {
-            e.printStackTrace()
-        }
-        return ""
-    }
 }
