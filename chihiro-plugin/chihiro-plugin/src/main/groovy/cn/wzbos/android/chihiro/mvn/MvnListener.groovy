@@ -69,8 +69,8 @@ class MvnListener implements TaskExecutionListener, BuildListener {
             if (settings != null) {
                 settings.send(projectName, archives)
             }
-            archives.clear()
         }
+        archives.clear()
     }
 
 }
