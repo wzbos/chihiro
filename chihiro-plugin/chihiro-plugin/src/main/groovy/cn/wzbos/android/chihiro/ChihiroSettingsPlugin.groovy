@@ -54,7 +54,7 @@ class ChihiroSettingsPlugin implements Plugin<Settings> {
             Logger.i("--------------------------------------------------------------")
             Logger.i("include $projectName")
             settings.include "$projectName"
-            Logger.i("project(\":${projectName}\").projectDir = ${file}")
+            Logger.i("project(\":${projectName}\").projectDir = new File('${file}')")
 
             settings.project(":${projectName}").projectDir = file
 
@@ -67,10 +67,11 @@ class ChihiroSettingsPlugin implements Plugin<Settings> {
                         if (new File(gradleSettingsPath).exists()) {
                             MvnConfig mvnConfig = MvnConfig.load(gradleSettingsPath)
                             if (mvnConfig != null && mvnConfig.isValid()) {
-                                def moduleName = ":$projectName:${f.name}"
-                                Logger.i("include ${moduleName}")
+                                def moduleName = ":$projectName:${mvnConfig.artifactId}"
+                                Logger.i("include '${moduleName}'")
                                 settings.include moduleName
-
+                                settings.project("${moduleName}").projectDir = f
+                                Logger.i("project(\"${moduleName}\").projectDir = new File('${f}')")
                                 if (chihiroProject.modules == null) {
                                     chihiroProject.modules = new ArrayList<>()
                                 }

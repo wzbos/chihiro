@@ -84,7 +84,7 @@ class ChihiroPlugin implements Plugin<Project> {
                                 try {
                                     String prjName = settings.getLocalProjectName(selector.group, selector.module)
                                     if (prjName != null && prjName.length() > 0) {
-                                        Logger.i("${selector} ==> project(:${prjName}:${selector.module})")
+                                        Logger.i("${selector} ==> project(\":${prjName}:${selector.module}\")")
                                         dependency.useTarget pro.project(":${prjName}:${selector.module}")
                                     }
                                 } catch (Exception e) {
