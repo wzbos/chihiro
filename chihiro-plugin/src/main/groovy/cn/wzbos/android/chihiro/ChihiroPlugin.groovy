@@ -30,7 +30,6 @@ class ChihiroPlugin implements Plugin<Project> {
         }
         settings = ChihiroSettings.get(pro)
 
-        addMavenRepositories()
         cacheChangingModulesTime(0)
         addDynamicDSLMethod()
         applyMvnPlugin()
@@ -98,38 +97,6 @@ class ChihiroPlugin implements Plugin<Project> {
         }
     }
 
-    void addMavenRepositories() {
-        if (pro.hasProperty("MAVEN_SNAPSHOTS_URL"))
-            addMavenRepositories(pro.MAVEN_SNAPSHOTS_URL)
-        if (pro.hasProperty("MAVEN_RELEASE_URL"))
-            addMavenRepositories(pro.MAVEN_RELEASE_URL)
-    }
-
-    void addMavenRepositories(String mvnUrl) {
-        int count = pro.repositories.size()
-        for (int i = 0; i < count; i++) {
-            ArtifactRepository repository = pro.repositories.get(i)
-            if (repository instanceof MavenArtifactRepository) {
-                DefaultMavenArtifactRepository mvnRepository = (DefaultMavenArtifactRepository) repository
-                if (mvnRepository.url.toString().equalsIgnoreCase(mvnUrl)) {
-                    return
-                }
-            }
-        }
-
-        MavenArtifactRepository mavenRepository = pro.repositories.maven {
-            if (mvnUrl.toLowerCase().startsWith("http")) {
-                url mvnUrl
-            } else {
-                url pro.uri(mvnUrl)
-            }
-        }
-
-        pro.repositories.remove(mavenRepository)
-        pro.repositories.add(0, mavenRepository)
-
-        Logger.i("add maven repository, ${mavenRepository.url}")
-    }
 
     void cacheChangingModulesTime(int sec) {
         pro.configurations.all {

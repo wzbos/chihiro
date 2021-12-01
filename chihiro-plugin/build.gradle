@@ -7,7 +7,8 @@ dependencies {
     implementation gradleApi()
 }
 
-apply plugin: 'maven-publish'
+def chihiroVersion = '1.0.10-SNAPSHOT'
+
 publishing {
     repositories {
         maven {
@@ -16,7 +17,7 @@ publishing {
             def releasesRepoUrl = properties.getProperty('MAVEN_RELEASES_URL')
             def snapshotsRepoUrl = properties.getProperty('MAVEN_SNAPSHOTS_URL')
             allowInsecureProtocol = true
-            url = chihiro_version.contains("SNAPSHOT") ? snapshotsRepoUrl : releasesRepoUrl
+            url = chihiroVersion.contains("SNAPSHOT") ? snapshotsRepoUrl : releasesRepoUrl
             credentials {
                 username = properties.getProperty('MAVEN_USERNAME')
                 password = properties.getProperty('MAVEN_PWD')
@@ -24,11 +25,29 @@ publishing {
         }
     }
     publications {
-        maven(MavenPublication) {
-            groupId = publishedGroupId
-            artifactId = artifactId
-            version = chihiro_version
+        mavenJava(MavenPublication) {
+            groupId = "cn.wzbos.android"
+            artifactId = "chihiro-plugin"
+            version = chihiroVersion
             from components.java
+            pom {
+                name = "chihiro-plugin"
+                description = "chihiro-plugin"
+                url = "https://github.com/wzbos/chihiro"
+                licenses {
+                    license {
+                        name = "The Apache Software License, Version 2.0"
+                        url = "http://www.apache.org/licenses/LICENSE-2.0.txt"
+                    }
+                }
+                developers {
+                    developer {
+                        id = "wzbos"
+                        name = "wuzongbo"
+                        email = "sckoo@163.com"
+                    }
+                }
+            }
         }
     }
 }

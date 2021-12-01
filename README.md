@@ -80,7 +80,7 @@
     - settings.gradle
 ```
 
-#### 1.在调用方ProjectA/build.gradle，ProjectA/settings.gradle，ProjectB/build.gradle，ProjectB/settings.gradle中添加如下配置
+#### 1.在ProjectA/build.gradle，ProjectA/settings.gradle，ProjectB/build.gradle，ProjectB/settings.gradle中添加如下配置
 
 ```gradle
 buildscript {

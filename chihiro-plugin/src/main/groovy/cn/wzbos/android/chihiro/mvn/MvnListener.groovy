@@ -18,7 +18,7 @@ class MvnListener implements TaskExecutionListener, BuildListener {
 
     @Override
     void beforeExecute(Task task) {
-        if ("uploadArchives".equalsIgnoreCase(task.name)) {
+        if ("publish".equalsIgnoreCase(task.name)) {
             Logger.i("${task.project.name} Publish...")
         }
     }
@@ -27,22 +27,17 @@ class MvnListener implements TaskExecutionListener, BuildListener {
 
     @Override
     void afterExecute(Task task, TaskState taskState) {
-        if (task.project.plugins.hasPlugin('maven') && "uploadArchives".equalsIgnoreCase(task.name)) {
+        if (task.project.plugins.hasPlugin('maven-publish') && "publish".equalsIgnoreCase(task.name)) {
             if (taskState.executed) {
                 if (taskState.failure == null) {
-                    Logger.i("uploadArchives ${task.project.name} success!")
+                    Logger.i("publish ${task.project.name} success!")
                     MvnConfig mvnConfig = MvnConfig.load(task.project)
                     archives.add(mvnConfig)
                 } else {
-                    Logger.e("uploadArchives ${task.project.name} failed!")
+                    Logger.e("publish ${task.project.name} failed!")
                 }
             }
         }
-    }
-
-    @Override
-    void buildStarted(Gradle gradle) {
-
     }
 
     @Override

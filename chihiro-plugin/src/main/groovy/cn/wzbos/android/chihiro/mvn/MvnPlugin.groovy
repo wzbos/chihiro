@@ -1,16 +1,18 @@
 package cn.wzbos.android.chihiro.mvn
 
-import cn.wzbos.android.chihiro.utils.Logger
+
 import org.gradle.api.Plugin
 import org.gradle.api.Project
-import org.gradle.api.artifacts.maven.MavenDeployment
-import org.gradle.api.plugins.MavenPlugin
+import org.gradle.api.publish.maven.MavenPublication
+import org.gradle.api.publish.maven.plugins.MavenPublishPlugin
 import org.gradle.api.tasks.bundling.Jar
 import org.gradle.api.tasks.javadoc.Javadoc
 import org.gradle.plugins.signing.SigningPlugin
 
 /**
  * Maven 组件上传(Android Library)
+ * <A href="https://docs.gradle.org/current/userguide/publishing_maven.html">Maven Publish</A>
+ * < a
  * Created by wuzongbo on 2020/09/02.
  */
 class MvnPlugin implements Plugin<Project> {
@@ -20,21 +22,13 @@ class MvnPlugin implements Plugin<Project> {
         return !ver.contains("SNAPSHOT")
     }
 
-    private static String getUrl(Project project, String url) {
-        if (url.toLowerCase().startsWith("http")) {
-            return url
-        } else {
-            return project.uri(url).toString()
-        }
-    }
-
     @Override
     void apply(Project project) {
         if (!project.plugins.hasPlugin('com.android.library') && !project.plugins.hasPlugin('java')) {
             throw new IllegalStateException('插件仅支持 Android Library 与 Java Library!')
         }
 
-        project.apply plugin: MavenPlugin
+        project.apply plugin: MavenPublishPlugin
         project.apply plugin: SigningPlugin
 
         if (uploadArchivesListener == null) {
@@ -46,77 +40,11 @@ class MvnPlugin implements Plugin<Project> {
 
 
         project.afterEvaluate {
-            project.uploadArchives {
-                repositories {
-                    mavenDeployer {
-                        beforeDeployment { MavenDeployment deployment -> project.signing.signPom(deployment) }
-
-                        pom.groupId = project.PROJ_GROUP
-                        pom.artifactId = project.PROJ_ARTIFACTID
-                        pom.version = project.PROJ_VERSION
-
-                        if (!isReleaseBuild(project.PROJ_VERSION)) {
-                            snapshotRepository(url: getUrl(project, project.MAVEN_SNAPSHOTS_URL)) {
-                                if (project.hasProperty("MAVEN_USERNAME") && project.hasProperty("MAVEN_PWD")) {
-                                    authentication(userName: project.MAVEN_USERNAME, password: project.MAVEN_PWD)
-                                }
-                            }
-                        } else {
-                            repository(url: getUrl(project, project.MAVEN_RELEASE_URL)) {
-                                if (project.hasProperty("MAVEN_USERNAME") && project.hasProperty("MAVEN_PWD")) {
-                                    authentication(userName: project.MAVEN_USERNAME, password: project.MAVEN_PWD)
-                                }
-                            }
-                        }
-
-                        pom.project {
-                            name project.PROJ_POM_NAME
-                            packaging project.POM_PACKAGING
-                            description project.PROJ_DESCRIPTION
-                            url project.PROJ_WEBSITEURL
-
-                            scm {
-                                url project.PROJ_VCSURL
-                                connection project.DEVELOPER_EMAIL
-                                developerConnection project.DEVELOPER_EMAIL
-                            }
-
-                            developers {
-                                developer {
-                                    id project.DEVELOPER_ID
-                                    name project.DEVELOPER_NAME
-                                }
-                            }
-                        }
-
-                        pom.whenConfigured { pom ->
-                            pom.dependencies.forEach { dep ->
-                                if ("unspecified".equalsIgnoreCase(dep.getVersion())) {
-                                    try {
-                                        MvnConfig mvnConfig = MvnConfig.load(project, dep.artifactId)
-                                        Logger.i("dependencies => ${mvnConfig.group}:$mvnConfig.artifactId:$mvnConfig.version")
-                                        dep.setGroupId(mvnConfig.group)
-                                        dep.setVersion(mvnConfig.version)
-                                    } catch (Exception e) {
-                                        e.printStackTrace()
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
-
-            }
-
-            project.extensions.configure("signing", { t ->
-                t.required { isReleaseBuild(project.PROJ_VERSION) && project.gradle.taskGraph.hasTask("uploadArchives") }
-                t.sign project.configurations.archives
-            })
 
             if (project.hasProperty("android")) {
                 //将源码打包
                 project.task(type: Jar, "sourcesJar") {
-                    classifier = 'sources'
+                    archiveClassifier.set("sources")
                     from project.android.sourceSets.main.java.srcDirs
                 }
 
@@ -140,27 +68,72 @@ class MvnPlugin implements Plugin<Project> {
             } else {
                 // Java libraries
                 project.task(type: Jar, dependsOn: project.getTasksByName("classes", true), "sourcesJar") {
-                    classifier = 'sources'
+                    archiveClassifier.set("sources")
                     from project.sourceSets.main.allSource
                 }
             }
 
             //将文档打包成jar
             project.task([type: Jar, dependsOn: project.getTasksByName("javadoc", true)], "javadocJar") {
-                classifier = 'javadoc'
                 from project.javadoc.destinationDir
+                archiveClassifier.set("javadoc")
             }
 
-            project.artifacts {
-                archives project.sourcesJar
-                archives project.javadocJar
+            project.publishing {
+                repositories {
+                    maven {
+                        def releasesRepoUrl = project.MAVEN_RELEASE_URL
+                        def snapshotsRepoUrl = project.MAVEN_SNAPSHOTS_URL
+                        allowInsecureProtocol = true
+                        url = isReleaseBuild(project.PROJ_VERSION) ? releasesRepoUrl : snapshotsRepoUrl
+                        credentials {
+                            username = project.MAVEN_USERNAME
+                            password = project.MAVEN_PWD
+                        }
+                    }
+                }
+
+                publications {
+                    release(MavenPublication) {
+                        groupId = project.PROJ_GROUP
+                        artifactId = project.PROJ_ARTIFACTID
+                        version = project.PROJ_VERSION
+                        from project.components.release
+                        artifact project.sourcesJar
+                        artifact project.javadocJar
+                        pom {
+                            name = project.PROJ_POM_NAME
+                            description = project.PROJ_DESCRIPTION
+                            url = project.PROJ_WEBSITEURL
+                            licenses {
+                                license {
+                                    name = project.LICENSE_NAME
+                                    url = project.LICENSE_URL
+                                }
+                            }
+                            developers {
+                                developer {
+                                    id = project.DEVELOPER_ID
+                                    name = project.DEVELOPER_NAME
+                                    email = project.DEVELOPER_EMAIL
+                                }
+                            }
+                            scm {
+                                connection = project.DEVELOPER_EMAIL
+                                developerConnection = project.DEVELOPER_EMAIL
+                                url = project.PROJ_VCSURL
+                            }
+                        }
+                    }
+                }
             }
 
-            project.task("javaDocBuild") {
-                project.sourcesJar
-                project.javadocJar
-            }
+            project.extensions.configure("signing", { t ->
+                t.required { isReleaseBuild(project.PROJ_VERSION) && project.gradle.taskGraph.hasTask("publish") }
+                t.sign project.publishing.publications.release
+            })
         }
     }
 
 }
+
