@@ -84,7 +84,7 @@
 ```gradle
 buildscript {
     repositories {
-        jcenter()
+        mavenCentral()
     }
     dependencies {
         classpath "cn.wzbos.android:chihiro-plugin:1.x"
