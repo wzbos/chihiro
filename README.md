@@ -2,8 +2,9 @@
 
 本插件是解决基于Sonatype Nexus Repository Manager OSS仓库 快速开发Android组件提供的一套完整的解决方案。
 
-[![Download](https://api.bintray.com/packages/wuzongbo/maven/chihiro-plugin/images/download.svg) ](https://bintray.com/wuzongbo/maven/chihiro-plugin/_latestVersion)
-[![Maven](https://img.shields.io/badge/jcenter-chihiro-green.svg?style=true)](https://jcenter.bintray.com/cn/wzbos/android/chihiro-plugin)
+[![License](https://img.shields.io/badge/License%20-Apache%202-337ab7.svg)](https://www.apache.org/licenses/LICENSE-2.0)
+[![Maven-Central-Release](https://img.shields.io/maven-central/v/cn.wzbos.android/chihiro-plugin)](https://s01.oss.sonatype.org/content/repositories/releases/cn/wzbos/android/chihiro-plugin/)
+[![Maven-Central-Snapshot](https://img.shields.io/nexus/s/cn.wzbos.android/chihiro-plugin?server=https%3A%2F%2Fs01.oss.sonatype.org)](https://s01.oss.sonatype.org/content/repositories/snapshots/cn/wzbos/android/chihiro-plugin/)
 
 ## 开发背景
 
