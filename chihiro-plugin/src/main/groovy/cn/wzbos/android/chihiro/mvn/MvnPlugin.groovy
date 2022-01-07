@@ -98,17 +98,19 @@ class MvnPlugin implements Plugin<Project> {
                         groupId = project.PROJ_GROUP
                         artifactId = project.PROJ_ARTIFACTID
                         version = project.PROJ_VERSION
-                        from project.components.release
+                        from project.hasProperty("android") ? project.components.release : project.components.java
                         artifact project.sourcesJar
                         artifact project.javadocJar
                         pom {
                             name = project.PROJ_POM_NAME
                             description = project.PROJ_DESCRIPTION
                             url = project.PROJ_WEBSITEURL
-                            licenses {
-                                license {
-                                    name = project.LICENSE_NAME
-                                    url = project.LICENSE_URL
+                            if (hasProperty("LICENSE_NAME") && hasProperty("LICENSE_URL")) {
+                                licenses {
+                                    license {
+                                        name = project.LICENSE_NAME
+                                        url = project.LICENSE_URL
+                                    }
                                 }
                             }
                             developers {
