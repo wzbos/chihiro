@@ -1,43 +1,38 @@
 plugins {
     id 'groovy'
     id 'maven-publish'
+    id 'org.jreleaser' version '1.17.0'
 }
 
 dependencies {
     implementation gradleApi()
 }
 
-def chihiroVersion = '1.1.0-SNAPSHOT'
+
+java {
+//    withJavadocJar()
+    withSourcesJar()
+}
+
+def chihiroVersion = '1.1.0'
 
 publishing {
-    repositories {
-        maven {
-            Properties properties = new Properties()
-            properties.load(project.rootProject.file('local.properties').newDataInputStream())
-            def releasesRepoUrl = properties.getProperty('MAVEN_RELEASES_URL')
-            def snapshotsRepoUrl = properties.getProperty('MAVEN_SNAPSHOTS_URL')
-            allowInsecureProtocol = true
-            url = chihiroVersion.contains("SNAPSHOT") ? snapshotsRepoUrl : releasesRepoUrl
-            credentials {
-                username = properties.getProperty('MAVEN_USERNAME')
-                password = properties.getProperty('MAVEN_PWD')
-            }
-        }
-    }
     publications {
         mavenJava(MavenPublication) {
             groupId = "cn.wzbos.android"
             artifactId = "chihiro-plugin"
             version = chihiroVersion
             from components.java
+
             pom {
                 name = "chihiro-plugin"
                 description = "chihiro-plugin"
                 url = "https://github.com/wzbos/chihiro"
+                inceptionYear = '2020'
                 licenses {
                     license {
-                        name = "The Apache Software License, Version 2.0"
-                        url = "http://www.apache.org/licenses/LICENSE-2.0.txt"
+                        name = 'Apache-2.0'
+                        url = 'https://spdx.org/licenses/Apache-2.0.html'
                     }
                 }
                 developers {
@@ -47,7 +42,38 @@ publishing {
                         email = "sckoo@163.com"
                     }
                 }
+                scm {
+                    connection = 'scm:git:https://github.com/wzbos/chihiro.git'
+                    developerConnection = 'scm:git:ssh://github.com/wzbos/chihiro.git'
+                    url = 'https://github.com/wzbos/chihiro'
+                }
             }
+        }
+    }
+
+    repositories {
+        maven {
+            url = layout.buildDirectory.dir('staging-deploy')
+        }
+    }
+}
+
+// https://jreleaser.org/guide/latest/examples/maven/maven-central.html#_gradle
+jreleaser {
+    signing {
+        active = 'ALWAYS'
+        armored = true
+    }
+    deploy {
+        maven {
+            mavenCentral {
+                sonatype {
+                    active = 'ALWAYS'
+                    url = 'https://central.sonatype.com/api/v1/publisher'
+                    stagingRepository('target/staging-deploy')
+                }
+            }
+
         }
     }
 }
