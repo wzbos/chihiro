@@ -19,7 +19,7 @@ abstract class AbsTrigger {
     }
 
     static String markdown(TriggerRequest request) {
-        String content = "### Publish <font color=\"#FF0000\">${request.project}</font> Success!";
+        String content = "### <font color=\"#FF0000\">${request.project}</font> Published Successfully!"
         content += "\n- Builder：${request.username}"
         content += "\n- Branch：${request.branch}"
         content += "\n- Time：${request.datetime}"

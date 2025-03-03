@@ -9,9 +9,6 @@ import org.gradle.api.Project
 import org.gradle.api.UnknownProjectException
 import org.gradle.api.artifacts.DependencySubstitution
 import org.gradle.api.artifacts.component.ModuleComponentSelector
-import org.gradle.api.artifacts.repositories.ArtifactRepository
-import org.gradle.api.artifacts.repositories.MavenArtifactRepository
-import org.gradle.api.internal.artifacts.repositories.DefaultMavenArtifactRepository
 
 /**
  * 千寻插件(module)
@@ -36,26 +33,35 @@ class ChihiroPlugin implements Plugin<Project> {
         replaceDependency()
     }
 
-
     private void addDynamicDSLMethod() {
-        pro.rootProject.ext {
-            dynamic = { path ->
-                def parentPrjName = pro.getParent().name
-                Logger.d("dynamic, project=$parentPrjName, path=$path")
-                if (settings != null && settings.isDebug(parentPrjName)) {
-                    try {
-                        Logger.i("dynamic($path) ==> project(:${parentPrjName}${path})")
-                        return pro.project(":${parentPrjName}${path}")
-                    } catch (UnknownProjectException exception) {
-                        throw new ChihiroException("组件\"${parentPrjName}${path}\"不存在！", exception)
-                    }
-                } else {
-                    try {
-                        return pro.project(path)
-                    } catch (UnknownProjectException exception) {
-                        throw new ChihiroException("组件\"${path}\"不存在！", exception)
-                    }
+        if (pro.buildscript.sourceFile.absolutePath.endsWith(".kts")) {
+            // 注册 Kotlin DSL 扩展函数
+            pro.extensions.add("dynamic", this.&dynamic)
+        } else {
+            // Groovy DSL 使用 ExtraPropertiesExtension
+            pro.rootProject.ext {
+                dynamic = { path ->
+                    dynamic(path)
                 }
+            }
+        }
+    }
+
+    private Object dynamic(path) {
+        def parentPrjName = pro.getParent().name
+        Logger.d("dynamic, project=$parentPrjName, path=$path")
+        if (settings != null && settings.isDebug(parentPrjName)) {
+            try {
+                Logger.i("dynamic($path) ==> project(:${parentPrjName}${path})")
+                return pro.project(":${parentPrjName}${path}")
+            } catch (UnknownProjectException exception) {
+                throw new ChihiroException("组件\"${parentPrjName}${path}\"不存在！", exception)
+            }
+        } else {
+            try {
+                return pro.project(path)
+            } catch (UnknownProjectException exception) {
+                throw new ChihiroException("组件\"${path}\"不存在！", exception)
             }
         }
     }
@@ -74,7 +80,7 @@ class ChihiroPlugin implements Plugin<Project> {
 
     private void replaceDependency() {
         pro.afterEvaluate {
-            pro.configurations.all {
+            pro.configurations.configureEach {
                 resolutionStrategy.dependencySubstitution {
                     all { DependencySubstitution dependency ->
                         if (dependency.requested instanceof ModuleComponentSelector) {
@@ -99,11 +105,9 @@ class ChihiroPlugin implements Plugin<Project> {
 
 
     void cacheChangingModulesTime(int sec) {
-        pro.configurations.all {
+        pro.configurations.configureEach {
             resolutionStrategy.cacheChangingModulesFor sec, 'seconds'
         }
     }
-
 }
-
 

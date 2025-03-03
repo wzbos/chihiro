@@ -7,7 +7,7 @@ dependencies {
     implementation gradleApi()
 }
 
-def chihiroVersion = '1.0.10'
+def chihiroVersion = '1.1.0-SNAPSHOT'
 
 publishing {
     repositories {

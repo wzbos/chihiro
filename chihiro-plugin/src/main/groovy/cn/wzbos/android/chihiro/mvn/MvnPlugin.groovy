@@ -1,12 +1,9 @@
 package cn.wzbos.android.chihiro.mvn
 
-
 import org.gradle.api.Plugin
 import org.gradle.api.Project
 import org.gradle.api.publish.maven.MavenPublication
 import org.gradle.api.publish.maven.plugins.MavenPublishPlugin
-import org.gradle.api.tasks.bundling.Jar
-import org.gradle.api.tasks.javadoc.Javadoc
 import org.gradle.plugins.signing.SigningPlugin
 
 /**
@@ -38,48 +35,29 @@ class MvnPlugin implements Plugin<Project> {
         }
         project.gradle.addListener(uploadArchivesListener)
 
+        project.beforeEvaluate {
+            project.android.publishing {
+                singleVariant("release") {
+                    withSourcesJar()
+                    withJavadocJar()
+                }
+                singleVariant("debug") {
+                    withSourcesJar()
+                    withJavadocJar()
+                }
+                multipleVariants {
+                    withSourcesJar()
+                    withJavadocJar()
+                    allVariants()
+                }
+            }
+        }
 
         project.afterEvaluate {
-
-            if (project.hasProperty("android")) {
-                //将源码打包
-                project.task(type: Jar, "sourcesJar") {
-                    archiveClassifier.set("sources")
-                    from project.android.sourceSets.main.java.srcDirs
-                }
-
-                //生成文档注释
-                project.task(type: Javadoc, "javadoc") {
-                    failOnError = false
-                    source = project.android.sourceSets.main.java.srcDirs
-                    ext.androidJar = "${project.android.sdkDirectory}/platforms/${project.android.compileSdkVersion}/android.jar"
-                    options {
-                        encoding 'utf-8'
-                        charSet 'utf-8'
-                        links 'http://docs.oracle.com/javase/7/docs/api/'
-                        linksOffline "https://developer.android.com/reference", "${project.android.sdkDirectory}/docs/reference"
-                    }
-                    exclude '**/BuildConfig.java'
-                    exclude '**/R.java'
-                    options.encoding = 'utf-8'
-                    classpath += project.files(project.android.getBootClasspath().join(File.pathSeparator))
-                }
-
-            } else {
-                // Java libraries
-                project.task(type: Jar, dependsOn: project.getTasksByName("classes", true), "sourcesJar") {
-                    archiveClassifier.set("sources")
-                    from project.sourceSets.main.allSource
-                }
-            }
-
-            //将文档打包成jar
-            project.task([type: Jar, dependsOn: project.getTasksByName("javadoc", true)], "javadocJar") {
-                from project.javadoc.destinationDir
-                archiveClassifier.set("javadoc")
-            }
-
+            def buildType = project.hasProperty("targetComponent") ? project.targetComponent : "release"
+            println("buildType: $buildType")
             project.publishing {
+
                 repositories {
                     maven {
                         def releasesRepoUrl = project.MAVEN_RELEASE_URL
@@ -93,49 +71,59 @@ class MvnPlugin implements Plugin<Project> {
                     }
                 }
 
-                publications {
-                    release(MavenPublication) {
-                        groupId = project.PROJ_GROUP
-                        artifactId = project.PROJ_ARTIFACTID
-                        version = project.PROJ_VERSION
-                        from project.hasProperty("android") ? project.components.release : project.components.java
-                        artifact project.sourcesJar
-                        artifact project.javadocJar
-                        pom {
-                            name = project.PROJ_POM_NAME
-                            description = project.PROJ_DESCRIPTION
-                            url = project.PROJ_WEBSITEURL
-                            if (hasProperty("LICENSE_NAME") && hasProperty("LICENSE_URL")) {
-                                licenses {
-                                    license {
-                                        name = project.LICENSE_NAME
-                                        url = project.LICENSE_URL
+                project.components.each { component ->
+                    println("components: ${component.name}")
+                    if (component.name != buildType) return
+
+                    def appendage = component.name.replaceAll("[Rr]elease", "")
+                    if (!appendage.isEmpty())
+                        appendage = "-$appendage"
+
+                    println("appendage: $appendage")
+
+                    publications {
+                        "${component.name}"(MavenPublication) {
+                            groupId = project.PROJ_GROUP
+                            artifactId = project.PROJ_ARTIFACTID + appendage
+                            version = project.PROJ_VERSION
+                            from component
+                            pom {
+                                name = project.PROJ_POM_NAME
+                                description = project.PROJ_DESCRIPTION
+                                url = project.PROJ_WEBSITEURL
+                                if (hasProperty("LICENSE_NAME") && hasProperty("LICENSE_URL")) {
+                                    licenses {
+                                        license {
+                                            name = project.LICENSE_NAME
+                                            url = project.LICENSE_URL
+                                        }
                                     }
                                 }
-                            }
-                            developers {
-                                developer {
-                                    id = project.DEVELOPER_ID
-                                    name = project.DEVELOPER_NAME
-                                    email = project.DEVELOPER_EMAIL
+                                developers {
+                                    developer {
+                                        id = project.DEVELOPER_ID
+                                        name = project.DEVELOPER_NAME
+                                        email = project.DEVELOPER_EMAIL
+                                    }
                                 }
-                            }
-                            scm {
-                                connection = project.DEVELOPER_EMAIL
-                                developerConnection = project.DEVELOPER_EMAIL
-                                url = project.PROJ_VCSURL
+                                scm {
+                                    connection = project.DEVELOPER_EMAIL
+                                    developerConnection = project.DEVELOPER_EMAIL
+                                    url = project.PROJ_VCSURL
+                                }
                             }
                         }
                     }
                 }
             }
 
-            project.extensions.configure("signing", { t ->
-                t.required { isReleaseBuild(project.PROJ_VERSION) && project.gradle.taskGraph.hasTask("publish") }
-                t.sign project.publishing.publications.release
-            })
+            if (buildType == "release") {
+                project.extensions.configure("signing", { t ->
+                    t.required { isReleaseBuild(project.PROJ_VERSION) && project.gradle.taskGraph.hasTask("publish") }
+                    t.sign project.publishing.publications.release
+                })
+            }
         }
     }
-
 }
 
