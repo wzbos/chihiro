@@ -66,7 +66,7 @@ class MvnPlugin implements Plugin<Project> {
                             url = project.layout.buildDirectory.dir('staging-deploy')
                         } else {
                             allowInsecureProtocol = true
-                            url = isReleaseBuild(proVersion) ? mvnConfig.mavenReleasesRepoUrl : mvnConfig.mavenSnapshotsRepoUrl
+                            url = isReleaseBuild(mvnConfig.version) ? mvnConfig.mavenReleasesRepoUrl : mvnConfig.mavenSnapshotsRepoUrl
                             credentials {
                                 username = mvnConfig.mavenUsername
                                 password = mvnConfig.mavenPassword
