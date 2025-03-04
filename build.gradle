@@ -1,4 +1,3 @@
-// Top-level build file where you can add configuration options common to all sub-projects/modules.
 buildscript {
     repositories {
         maven { url 'https://maven.aliyun.com/nexus/content/groups/public' }
@@ -12,14 +11,95 @@ buildscript {
     }
 }
 
-allprojects {
+plugins {
+    id 'groovy'
+    id 'maven-publish'
+    id 'org.jreleaser' version '1.17.0'
+}
+
+repositories {
+    maven { url 'https://maven.aliyun.com/nexus/content/groups/public' }
+    google()
+    mavenCentral()
+}
+dependencies {
+    implementation gradleApi()
+}
+
+java {
+    withJavadocJar()
+    withSourcesJar()
+}
+
+def GROUP_ID = findProperty("JRELEASER_PROJECT_JAVA_GROUP_ID") ?: "cn.wzbos.android"
+def VERSION_NAME = findProperty("version") ?: "1.0.0"
+
+println("GROUP_ID=${GROUP_ID}, VERSION_NAME=${VERSION_NAME}")
+
+publishing {
+    publications {
+        maven(MavenPublication) {
+
+            groupId = GROUP_ID
+            artifactId = "chihiro-plugin"
+            version = VERSION_NAME
+            from components.java
+
+            pom {
+                name = "chihiro-plugin"
+                description = "chihiro-plugin"
+                url = "https://github.com/wzbos/chihiro"
+                inceptionYear = '2020'
+                licenses {
+                    license {
+                        name = 'Apache-2.0'
+                        url = 'https://spdx.org/licenses/Apache-2.0.html'
+                    }
+                }
+                developers {
+                    developer {
+                        id = "wzbos"
+                        name = "wuzongbo"
+                        email = "sckoo@163.com"
+                    }
+                }
+                scm {
+                    connection = 'scm:git:https://github.com/wzbos/chihiro.git'
+                    developerConnection = 'scm:git:ssh://github.com/wzbos/chihiro.git'
+                    url = 'https://github.com/wzbos/chihiro'
+                }
+            }
+        }
+    }
+
     repositories {
-        maven { url 'https://maven.aliyun.com/nexus/content/groups/public' }
-        google()
-        mavenCentral()
+        maven {
+            url = layout.buildDirectory.dir('../build/staging-deploy')
+        }
     }
 }
 
-tasks.register('clean', Delete) {
-    delete rootProject.buildDir
+// https://jreleaser.org/guide/latest/examples/maven/maven-central.html#_gradle
+jreleaser {
+    signing {
+        active = 'ALWAYS'
+        armored = true
+    }
+    project {
+        java {
+            groupId = GROUP_ID
+        }
+    }
+    deploy {
+        maven {
+            mavenCentral {
+                sonatype {
+                    namespace = "cn.wzbos.android"
+                    active = 'ALWAYS'
+                    url = 'https://central.sonatype.com/api/v1/publisher'
+                    stagingRepository(layout.buildDirectory.dir('../build/staging-deploy').get().toString())
+                }
+            }
+        }
+    }
 }
