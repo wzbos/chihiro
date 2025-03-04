@@ -74,13 +74,32 @@ publishing {
 
     repositories {
         maven {
-            url = layout.buildDirectory.dir('staging-deploy')
+            def isSnapshot = VERSION_NAME.contains("-SNAPSHOT")
+            if (isSnapshot) {
+                allowInsecureProtocol = true
+                Properties properties = new Properties()
+                properties.load(project.rootProject.file('local.properties').newDataInputStream())
+                url = properties.getProperty('MAVEN_SNAPSHOTS_URL')
+                credentials {
+                    username = properties.getProperty('MAVEN_USERNAME')
+                    password = properties.getProperty('MAVEN_PASSWORD')
+                }
+            } else {
+                url = layout.buildDirectory.dir('staging-deploy')
+            }
+
+
         }
     }
 }
 
 // https://jreleaser.org/guide/latest/examples/maven/maven-central.html#_gradle
 jreleaser {
+    release {
+        github {
+            apiEndpoint = "https://api.github.com"
+        }
+    }
     signing {
         active = 'ALWAYS'
         armored = true

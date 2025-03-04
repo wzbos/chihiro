@@ -40,9 +40,7 @@ class ChihiroPlugin implements Plugin<Project> {
         } else {
             // Groovy DSL 使用 ExtraPropertiesExtension
             pro.rootProject.ext {
-                dynamic = { path ->
-                    dynamic(path)
-                }
+                dynamic = this.&dynamic
             }
         }
     }

@@ -1,5 +1,7 @@
 package cn.wzbos.android.chihiro.mvn
 
+import cn.wzbos.android.chihiro.utils.Logger
+import cn.wzbos.android.chihiro.utils.TextUtils
 import org.gradle.api.Plugin
 import org.gradle.api.Project
 import org.gradle.api.publish.maven.MavenPublication
@@ -9,7 +11,7 @@ import org.gradle.plugins.signing.SigningPlugin
 /**
  * Maven 组件上传(Android Library)
  * <A href="https://docs.gradle.org/current/userguide/publishing_maven.html">Maven Publish</A>
- * < a
+ * <a
  * Created by wuzongbo on 2020/09/02.
  */
 class MvnPlugin implements Plugin<Project> {
@@ -54,19 +56,21 @@ class MvnPlugin implements Plugin<Project> {
         }
 
         project.afterEvaluate {
-            def buildType = project.hasProperty("targetComponent") ? project.targetComponent : "release"
-            println("buildType: $buildType")
+            MvnConfig mvnConfig = MvnConfig.load(project)
+            def buildType = project.findProperty("targetComponent") ?: "release"
+            Logger.i("BuildType: $buildType")
             project.publishing {
-
                 repositories {
                     maven {
-                        def releasesRepoUrl = project.MAVEN_RELEASE_URL
-                        def snapshotsRepoUrl = project.MAVEN_SNAPSHOTS_URL
-                        allowInsecureProtocol = true
-                        url = isReleaseBuild(project.PROJ_VERSION) ? releasesRepoUrl : snapshotsRepoUrl
-                        credentials {
-                            username = project.MAVEN_USERNAME
-                            password = project.MAVEN_PWD
+                        if (mvnConfig.enableJReleaser) {
+                            url = project.layout.buildDirectory.dir('staging-deploy')
+                        } else {
+                            allowInsecureProtocol = true
+                            url = isReleaseBuild(proVersion) ? mvnConfig.mavenReleasesRepoUrl : mvnConfig.mavenSnapshotsRepoUrl
+                            credentials {
+                                username = mvnConfig.mavenUsername
+                                password = mvnConfig.mavenPassword
+                            }
                         }
                     }
                 }
@@ -83,33 +87,37 @@ class MvnPlugin implements Plugin<Project> {
 
                     publications {
                         "${component.name}"(MavenPublication) {
-                            groupId = project.PROJ_GROUP
-                            artifactId = project.PROJ_ARTIFACTID + appendage
-                            version = project.PROJ_VERSION
+                            groupId = mvnConfig.groupId
+                            artifactId = mvnConfig.artifactId + appendage
+                            version = mvnConfig.version
                             from component
                             pom {
-                                name = project.PROJ_POM_NAME
-                                description = project.PROJ_DESCRIPTION
-                                url = project.PROJ_WEBSITEURL
-                                if (hasProperty("LICENSE_NAME") && hasProperty("LICENSE_URL")) {
+                                name = mvnConfig.pomName
+                                description = mvnConfig.pomDescription
+                                url = mvnConfig.pomUrl
+                                if (!TextUtils.isEmpty(mvnConfig.pomInceptionYear)) {
+                                    inceptionYear = mvnConfig.pomInceptionYear
+                                }
+
+                                if (!mvnConfig.hasLicense()) {
                                     licenses {
                                         license {
-                                            name = project.LICENSE_NAME
-                                            url = project.LICENSE_URL
+                                            name = mvnConfig.pomLicenseName
+                                            url = mvnConfig.pomLicenseUrl
                                         }
                                     }
                                 }
                                 developers {
                                     developer {
-                                        id = project.DEVELOPER_ID
-                                        name = project.DEVELOPER_NAME
-                                        email = project.DEVELOPER_EMAIL
+                                        id = mvnConfig.pomDeveloperId
+                                        name = mvnConfig.pomDeveloperName
+                                        email = mvnConfig.pomDeveloperEMail
                                     }
                                 }
                                 scm {
-                                    connection = project.DEVELOPER_EMAIL
-                                    developerConnection = project.DEVELOPER_EMAIL
-                                    url = project.PROJ_VCSURL
+                                    connection = mvnConfig.pomSCMConnection
+                                    developerConnection = mvnConfig.pomSCMDeveloperConnection
+                                    url = mvnConfig.pomSCMUrl
                                 }
                             }
                         }
@@ -117,11 +125,11 @@ class MvnPlugin implements Plugin<Project> {
                 }
             }
 
-            if (buildType == "release") {
-                project.extensions.configure("signing", { t ->
-                    t.required { isReleaseBuild(project.PROJ_VERSION) && project.gradle.taskGraph.hasTask("publish") }
-                    t.sign project.publishing.publications.release
-                })
+            project.extensions.configure("signing") { t ->
+                t.required { isReleaseBuild(mvnConfig.version) && project.gradle.taskGraph.hasTask("publish") }
+                project.publishing.publications.each { pub ->
+                    t.sign(pub)
+                }
             }
         }
     }

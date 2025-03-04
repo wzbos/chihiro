@@ -86,7 +86,7 @@ class ChihiroSettings {
 
             if (project.modules != null) {
                 for (MvnConfig m : project.modules) {
-                    if (m.group == group && m.artifactId == module) {
+                    if (m.groupId == group && m.artifactId == module) {
                         return projectName
                     }
                 }

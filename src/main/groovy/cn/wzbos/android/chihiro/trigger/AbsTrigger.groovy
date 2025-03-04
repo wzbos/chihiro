@@ -25,7 +25,7 @@ abstract class AbsTrigger {
         content += "\n- Time：${request.datetime}"
         if (request.archives != null) {
             for (MvnConfig archive : request.archives) {
-                content += "\n> <font color=\"#0083FF\">${archive.group}</font>:<font color=\"info\">${archive.artifactId}</font>:<font color=\"#FF0000\">${archive.version}</font>"
+                content += "\n> <font color=\"#0083FF\">${archive.groupId}</font>:<font color=\"info\">${archive.artifactId}</font>:<font color=\"#FF0000\">${archive.version}</font>"
             }
         }
         return content
