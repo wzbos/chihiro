@@ -17,9 +17,6 @@ import org.gradle.plugins.signing.SigningPlugin
 class MvnPlugin implements Plugin<Project> {
     static MvnListener uploadArchivesListener = null
 
-    private static boolean isReleaseBuild(String ver) {
-        return !ver.contains("SNAPSHOT")
-    }
 
     @Override
     void apply(Project project) {
@@ -57,6 +54,9 @@ class MvnPlugin implements Plugin<Project> {
 
         project.afterEvaluate {
             MvnConfig mvnConfig = MvnConfig.load(project)
+            if (!mvnConfig.checkConfig()) {
+                return
+            }
             def buildType = project.findProperty("targetComponent") ?: "release"
             Logger.i("BuildType: $buildType")
             project.publishing {
@@ -66,7 +66,7 @@ class MvnPlugin implements Plugin<Project> {
                             url = project.layout.buildDirectory.dir('chihiro-staging-deploy')
                         } else {
                             allowInsecureProtocol = true
-                            url = isReleaseBuild(mvnConfig.version) ? mvnConfig.mavenReleasesRepoUrl : mvnConfig.mavenSnapshotsRepoUrl
+                            url = mvnConfig.isReleaseVersion() ? mvnConfig.mavenReleasesRepoUrl : mvnConfig.mavenSnapshotsRepoUrl
                             credentials {
                                 username = mvnConfig.mavenUsername
                                 password = mvnConfig.mavenPassword
@@ -126,7 +126,7 @@ class MvnPlugin implements Plugin<Project> {
             }
 
             project.extensions.configure("signing") { t ->
-                t.required { isReleaseBuild(mvnConfig.version) && project.gradle.taskGraph.hasTask("publish") }
+                t.required { mvnConfig.isReleaseVersion() && project.gradle.taskGraph.hasTask("publish") }
                 project.publishing.publications.each { pub ->
                     t.sign(pub)
                 }
