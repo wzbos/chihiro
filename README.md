@@ -43,7 +43,7 @@
 
 * 支持多工程加载
 * 动态将单工程本地依赖转换为多工程本地依赖, project(":library1") => project(":xxx:library1")
-* 动态将远程依赖转换为本地依赖, com.xxx.android:library1:1.0.0 => project(":xxx:library1") 
+* 动态将远程依赖转换为本地依赖, com.xxx.android:library1:1.0.0 => project(":xxx:library1")
 * 自动拉取Git仓库代码
 
 ## 插件接入
@@ -111,7 +111,6 @@ apply plugin: 'chihiro'
 
 #### 3、调整依赖
 
-
 ```
 ProjectA/library1/build.gradle
 ProjectA/library2/build.gradle
@@ -143,69 +142,43 @@ dependencies {
 **ProjectA/library1/gradle.properties**
 
 ```properties
-# 组件名
-PROJ_NAME=library1
-# 组件所属组
-PROJ_GROUP=cn.wzbos.android.library
-# 组件ID
-PROJ_ARTIFACTID=library1
-# 组件版本名称
-PROJ_VERSION=1.0.0
-# 组件版本号
-PROJ_VERSION_CODE=1
-# 工程名称
-PROJ_POM_NAME=library1
-# 组件说明
-PROJ_DESCRIPTION=Lib For wzbos.cn
-# 组件发布类型，aar或者jar
-POM_PACKAGING=aar
-# 组件gitlab仓库地址
-PROJ_WEBSITEURL=https\://github.com/wzbos/chihiro
-# issues 地址
-PROJ_ISSUETRACKERURL=
-# Git仓库地址
-PROJ_VCSURL=
-# 开发者ID
-DEVELOPER_ID=
-# 开发者名字
-DEVELOPER_NAME=
-# 开发者邮箱
-DEVELOPER_EMAIL=
-# MAVEN RELEASE仓库地址
-MAVEN_RELEASE_URL=../../repository/maven-releases
-# MAVEN SNAPSHOTS仓库地址
-MAVEN_SNAPSHOTS_URL=../../repository/maven-snapshots
-# MAVEN 登录名
-MAVEN_USERNAME=
-# MAVEN 密码
-MAVEN_PWD=
+CHIHIRO_GROUP_ID=cn.wzbos.android
+CHIHIRO_ARTIFACT_ID=chihiro
+CHIHIRO_VERSION=1.0.0-SNAPSHOT
+CHIHIRO_POM_NAME=chihiro
+CHIHIRO_POM_DESCRIPTION=The compiler used in chihiro
+CHIHIRO_POM_URL=https\://github.com/wzbos/chihiro
+CHIHIRO_POM_INCEPTION_YEAR=2019
+CHIHIRO_POM_LICENSE_NAME=The Apache Software License, Version 2.0
+CHIHIRO_POM_LICENSE_URL=https\://www.apache.org/licenses/LICENSE-2.0.txt
+CHIHIRO_POM_DEVELOPER_ID=wzbos
+CHIHIRO_POM_DEVELOPER_NAME=wuzongbo
+CHIHIRO_POM_DEVELOPER_EMAIL=sckoo@163.com
+CHIHIRO_POM_SCM_CONNECTION=scm\:git\:https\://github.com/wzbos/chihiro.git
+CHIHIRO_POM_SCM_DEVELOPER_CONNECTION=scm\:git\:ssh\://github.com/wzbos/chihiro.git
+CHIHIRO_POM_SCM_URL=https\://github.com/wzbos/chihiro
+CHIHIRO_ENABLE_JRELEASER=false
+CHIHIRO_MAVEN_RELEASES_URL=https\://nexus.xxxxx.com/repository/maven-releases/
+CHIHIRO_MAVEN_SNAPSHOTS_URL=https\://nexus.xxxxx.com/repository/maven-snapshots/
+CHIHIRO_MAVEN_USERNAME=
+CHIHIRO_MAVEN_PASSWORD=
 ```
 
-library2,library3 替换 `PROJ_NAME`、`PROJ_ARTIFACTID`、`PROJ_POM_NAME` 为library2,library3
+library2,library3 替换 `CHIHIRO_ARTIFACT_ID`、`CHIHIRO_POM_NAME` 为library2,library3
 
 **ProjectA/library2/gradle.properties**
+
 ```properties
-# 组件名
-PROJ_NAME=library2
-# 组件ID
-PROJ_ARTIFACTID=library2
-# 工程名称
-PROJ_POM_NAME=library2
-
+CHIHIRO_POM_NAME=library2
+CHIHIRO_ARTIFACT_ID=library2
 # 其他省略，参考 ProjectA/library1/gradle.properties
-
 ```
 
 **ProjectA/library3/gradle.properties**
 
 ```properties
-# 组件名
-PROJ_NAME=library3
-# 组件ID
-PROJ_ARTIFACTID=library3
-# 工程名称
-PROJ_POM_NAME=library3
-
+CHIHIRO_POM_NAME=library3
+CHIHIRO_ARTIFACT_ID=library3
 # 其他省略，参考 ProjectA/library1/gradle.properties
 
 ```
@@ -214,7 +187,7 @@ PROJ_POM_NAME=library3
 
 ```
 dependencies {
-  implementation "${PROJ_GROUP}:${PROJ_ARTIFACTID}:${PROJ_VERSION}"
+  implementation "${CHIHIRO_GROUP_ID}:${CHIHIRO_ARTIFACT_ID}:${CHIHIRO_VERSION}"
 }
 ```
 
@@ -226,7 +199,9 @@ dependencies {
 }
 ```
 
-**请根据自身情况相应调整，`PROJ_GROUP`、`PROJ_ARTIFACTID`、`PROJ_VERSION` 对应以上 gradle.properties 的值**
+**请根据自身情况相应调整，`CHIHIRO_GROUP_ID`、`CHIHIRO_ARTIFACT_ID`、`CHIHIRO_VERSION` 对应以上
+gradle.properties 的值
+**
 
 #### 5. 配置chihiro插件
 
@@ -262,14 +237,16 @@ chihiro {
 }
 ```
 
-**参数说明** 
+**参数说明**
+
 - log: true,打印调式日志,false,不打印调式日志，默认为false
 - maven: true,开启Maven上传功能，false,关闭maven上传功能，默认为false
 - wechat_key: 微信机器人key，非必填
 - projects: 项目集合，可为多个，非必填，Key,value 形式(key: 项目名称,value: 为具体内容)
     - debug: true 加载此项目，false（默认）不加载
     - directory: android 项目工程目录，相对路径或者绝对路径都可以，非必填，默认取当前工程同级目录
-    - git: git仓库地址，非必填，格式（git@github.com:wzbos/chihiro.git 或 https://username:password@github.com/wzbos/chihiro.git  ）
+    - git: git仓库地址，非必填，格式（git@github.com:wzbos/chihiro.git 或 https://username:
+      password@github.com/wzbos/chihiro.git ）
     - branch: Git分支，非必填，默认为maser
 
 ### 6、发布组件
@@ -293,7 +270,6 @@ chihiro {
 <img src="images/dingtalk.png" height="150"/>
 </p>
 
-
 ## 高级功能
 
 ### 自定义触发器
@@ -316,57 +292,25 @@ webhook {
 	"datetime": "2020-10-23 11:01:22",
 	"branch": "develop",
 	"archives": [{
-		"vcsUrl": "git@github.com:wzbos/chihiro.git",
-		"developerId": "wzbos",
-		"developerEmail": "sckoo@163.com",
-		"POMName": "library2",
-		"name": "library3",
-		"group": "cn.wzbos.chihiro.sample.sdk",
-		"GRADLE_FILE_NAME": "gradle.properties",
-		"websiteUrl": "https://github.com/wzbos/chihiro",
-		"valid": true,
-		"version": "1.0.0-SNAPSHOT",
-		"versionCode": "1",
-		"description": "sample library",
-		"issueTrackerUrl": "https://github.com/wzbos/chihiro/issues",
-		"developerName": "wuzongbo",
-		"packaging": "aar",
-		"artifactId": "library3"
-	}, {
-		"vcsUrl": "git@github.com:wzbos/chihiro.git",
-		"developerId": "wzbos",
-		"developerEmail": "sckoo@163.com",
-		"POMName": "library2",
-		"name": "library2",
-		"group": "cn.wzbos.chihiro.sample.sdk",
-		"GRADLE_FILE_NAME": "gradle.properties",
-		"websiteUrl": "https://github.com/wzbos/chihiro",
-		"valid": true,
-		"version": "1.0.0-SNAPSHOT",
-		"versionCode": "1",
-		"description": "sample library",
-		"issueTrackerUrl": "https://github.com/wzbos/chihiro/issues",
-		"developerName": "wuzongbo",
-		"packaging": "aar",
-		"artifactId": "library2"
-	}, {
-		"vcsUrl": "git@github.com:wzbos/chihiro.git",
-		"developerId": "wzbos",
-		"developerEmail": "sckoo@163.com",
-		"POMName": "library1",
-		"name": "library1",
-		"group": "cn.wzbos.chihiro.sample.sdk",
-		"GRADLE_FILE_NAME": "gradle.properties",
-		"websiteUrl": "https://github.com/wzbos/chihiro",
-		"valid": true,
-		"version": "1.0.0-SNAPSHOT",
-		"versionCode": "1",
-		"description": "sample library",
-		"issueTrackerUrl": "https://github.com/wzbos/chihiro/issues",
-		"developerName": "wuzongbo",
-		"packaging": "aar",
-		"artifactId": "library1"
-	}],
+        "groupId": "com.example",
+        "artifactId": "example-artifact",
+        "version": "1.0.0",
+        "pomName": "Example Project",
+        "pomDescription": "This is an example project.",
+        "pomUrl": "https://example.com",
+        "pomInceptionYear": "2020",
+        "pomLicenseName": "Apache License 2.0",
+        "pomLicenseUrl": "https://www.apache.org/licenses/LICENSE-2.0",
+        "pomDeveloperId": "dev123",
+        "pomDeveloperName": "John Doe",
+        "pomDeveloperEMail": "john.doe@example.com",
+        "pomSCMConnection": "scm:git:git://example.com/repo.git",
+        "pomSCMDeveloperConnection": "scm:git:ssh://example.com/repo.git",
+        "pomSCMUrl": "https://example.com/repo",
+        "mavenReleasesRepoUrl": "https://repo.example.com/releases",
+        "mavenSnapshotsRepoUrl": "https://repo.example.com/snapshots",
+        "enableJReleaser": false
+    }],
 	"username": "wuzongbo",
 	"project": "ProjectB"
 }
