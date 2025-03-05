@@ -65,26 +65,26 @@ class MvnConfig {
 
 
     void loadProperties(MultiSourcePropertyReader reader) {
-        groupId = reader.getStringProperty("GROUP_ID", "PROJ_GROUP")
-        artifactId = reader.getStringProperty("ARTIFACT_ID", "PROJ_ARTIFACTID")
-        version = reader.getStringProperty("VERSION", "PROJ_VERSION")
-        pomName = reader.getStringProperty("POM_NAME", "PROJ_NAME")
-        pomDescription = reader.getStringProperty("POM_DESCRIPTION", "PROJ_DESCRIPTION") ?: ""
-        pomUrl = reader.getStringProperty("POM_URL", "PROJ_WEBSITEURL") ?: ""
-        pomInceptionYear = reader.getStringProperty("POM_INCEPTION_YEAR")
-        pomLicenseName = reader.getStringProperty("POM_LICENSE_NAME", "LICENSE_NAME")
-        pomLicenseUrl = reader.getStringProperty("POM_LICENSE_URL", "LICENSE_URL")
-        pomDeveloperId = reader.getStringProperty("POM_DEVELOPER_ID", "DEVELOPER_ID") ?: ""
-        pomDeveloperName = reader.getStringProperty("POM_DEVELOPER_NAME", "DEVELOPER_NAME") ?: ""
-        pomDeveloperEMail = reader.getStringProperty("POM_DEVELOPER_EMAIL", "DEVELOPER_EMAIL") ?: ""
-        pomSCMConnection = reader.getStringProperty("POM_SCM_CONNECTION") ?: ""
-        pomSCMDeveloperConnection = reader.getStringProperty("POM_SCM_DEVELOPER_CONNECTION") ?: ""
-        pomSCMUrl = reader.getStringProperty("POM_SCM_URL") ?: ""
-        enableJReleaser = reader.getBooleanProperty("ENABLE_JRELEASER") ?: ""
-        mavenReleasesRepoUrl = reader.getStringProperty("MAVEN_RELEASE_URL", "MAVEN_RELEASES_URL") ?: ""
-        mavenSnapshotsRepoUrl = reader.getStringProperty("MAVEN_SNAPSHOTS_URL") ?: ""
-        mavenUsername = reader.getStringProperty("MAVEN_USERNAME") ?: ""
-        mavenPassword = reader.getStringProperty("MAVEN_PASSWORD", "MAVEN_PWD") ?: ""
+        groupId = reader.getStringProperty("CHIHIRO_GROUP_ID", "PROJ_GROUP")
+        artifactId = reader.getStringProperty("CHIHIRO_ARTIFACT_ID", "PROJ_ARTIFACTID")
+        version = reader.getStringProperty("CHIHIRO_VERSION", "PROJ_VERSION")
+        pomName = reader.getStringProperty("CHIHIRO_POM_NAME", "PROJ_NAME")
+        pomDescription = reader.getStringProperty("CHIHIRO_POM_DESCRIPTION", "PROJ_DESCRIPTION") ?: ""
+        pomUrl = reader.getStringProperty("CHIHIRO_POM_URL", "PROJ_WEBSITEURL") ?: ""
+        pomInceptionYear = reader.getStringProperty("CHIHIRO_POM_INCEPTION_YEAR")
+        pomLicenseName = reader.getStringProperty("CHIHIRO_POM_LICENSE_NAME", "LICENSE_NAME")
+        pomLicenseUrl = reader.getStringProperty("CHIHIRO_POM_LICENSE_URL", "LICENSE_URL")
+        pomDeveloperId = reader.getStringProperty("CHIHIRO_POM_DEVELOPER_ID", "DEVELOPER_ID") ?: ""
+        pomDeveloperName = reader.getStringProperty("CHIHIRO_POM_DEVELOPER_NAME", "DEVELOPER_NAME") ?: ""
+        pomDeveloperEMail = reader.getStringProperty("CHIHIRO_POM_DEVELOPER_EMAIL", "DEVELOPER_EMAIL") ?: ""
+        pomSCMConnection = reader.getStringProperty("CHIHIRO_POM_SCM_CONNECTION") ?: ""
+        pomSCMDeveloperConnection = reader.getStringProperty("CHIHIRO_POM_SCM_DEVELOPER_CONNECTION") ?: ""
+        pomSCMUrl = reader.getStringProperty("CHIHIRO_POM_SCM_URL") ?: ""
+        enableJReleaser = reader.getBooleanProperty("CHIHIRO_ENABLE_JRELEASER") ?: ""
+        mavenReleasesRepoUrl = reader.getStringProperty("CHIHIRO_MAVEN_RELEASE_URL", "MAVEN_RELEASES_URL") ?: ""
+        mavenSnapshotsRepoUrl = reader.getStringProperty("CHIHIRO_MAVEN_SNAPSHOTS_URL", "MAVEN_SNAPSHOTS_URL") ?: ""
+        mavenUsername = reader.getStringProperty("CHIHIRO_MAVEN_USERNAME", "MAVEN_USERNAME") ?: ""
+        mavenPassword = reader.getStringProperty("CHIHIRO_MAVEN_PASSWORD", "MAVEN_PWD") ?: ""
     }
 
     boolean hasLicense() {

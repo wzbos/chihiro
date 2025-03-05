@@ -63,7 +63,7 @@ class MvnPlugin implements Plugin<Project> {
                 repositories {
                     maven {
                         if (mvnConfig.enableJReleaser) {
-                            url = project.layout.buildDirectory.dir('staging-deploy')
+                            url = project.layout.buildDirectory.dir('chihiro-staging-deploy')
                         } else {
                             allowInsecureProtocol = true
                             url = isReleaseBuild(mvnConfig.version) ? mvnConfig.mavenReleasesRepoUrl : mvnConfig.mavenSnapshotsRepoUrl
