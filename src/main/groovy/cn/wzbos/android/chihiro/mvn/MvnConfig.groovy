@@ -3,6 +3,7 @@ package cn.wzbos.android.chihiro.mvn
 import cn.wzbos.android.chihiro.utils.Logger
 import cn.wzbos.android.chihiro.utils.TextUtils
 import org.gradle.api.Project
+import org.gradle.internal.impldep.com.google.gson.annotations.Expose
 
 /**
  * Maven 配置
@@ -47,7 +48,9 @@ class MvnConfig {
     String pomSCMUrl
     String mavenReleasesRepoUrl
     String mavenSnapshotsRepoUrl
+    @Expose(serialize = false)
     String mavenUsername
+    @Expose(serialize = false)
     String mavenPassword
     boolean enableJReleaser = false
 
