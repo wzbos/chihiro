@@ -35,24 +35,33 @@ class MvnPlugin implements Plugin<Project> {
         project.gradle.addListener(uploadArchivesListener)
 
         project.beforeEvaluate {
-            project.android.publishing {
-                singleVariant("release") {
-                    withSourcesJar()
-                    withJavadocJar()
-                }
-                singleVariant("debug") {
-                    withSourcesJar()
-                    withJavadocJar()
-                }
-                multipleVariants {
-                    withSourcesJar()
-                    withJavadocJar()
-                    allVariants()
+            if (project.plugins.hasPlugin('com.android.library')) {
+                project.android.publishing {
+                    singleVariant("release") {
+                        withSourcesJar()
+                        withJavadocJar()
+                    }
+                    singleVariant("debug") {
+                        withSourcesJar()
+                        withJavadocJar()
+                    }
+                    multipleVariants {
+                        withSourcesJar()
+                        withJavadocJar()
+                        allVariants()
+                    }
                 }
             }
         }
 
         project.afterEvaluate {
+            if (project.plugins.hasPlugin('java')) {
+                // 这里没生效，为什么
+                project.java {
+                    withJavadocJar()
+                    withSourcesJar()
+                }
+            }
             MvnConfig mvnConfig = MvnConfig.load(project)
             if (!mvnConfig.checkConfig()) {
                 return
@@ -74,10 +83,9 @@ class MvnPlugin implements Plugin<Project> {
                         }
                     }
                 }
-
                 project.components.each { component ->
                     println("components: ${component.name}")
-                    if (component.name != buildType) return
+                    if (component.name != buildType && component.name != "java") return
 
                     def appendage = component.name.replaceAll("[Rr]elease", "")
                     if (!appendage.isEmpty())
@@ -95,6 +103,7 @@ class MvnPlugin implements Plugin<Project> {
                                 name = mvnConfig.pomName
                                 description = mvnConfig.pomDescription
                                 url = mvnConfig.pomUrl
+
                                 if (!TextUtils.isEmpty(mvnConfig.pomInceptionYear)) {
                                     inceptionYear = mvnConfig.pomInceptionYear
                                 }
@@ -107,6 +116,7 @@ class MvnPlugin implements Plugin<Project> {
                                         }
                                     }
                                 }
+
                                 developers {
                                     developer {
                                         id = mvnConfig.pomDeveloperId
@@ -114,6 +124,7 @@ class MvnPlugin implements Plugin<Project> {
                                         email = mvnConfig.pomDeveloperEMail
                                     }
                                 }
+
                                 scm {
                                     connection = mvnConfig.pomSCMConnection
                                     developerConnection = mvnConfig.pomSCMDeveloperConnection
@@ -133,5 +144,6 @@ class MvnPlugin implements Plugin<Project> {
             }
         }
     }
+
 }
 
