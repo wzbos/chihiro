@@ -29,7 +29,7 @@ class MvnConfig {
     static final String CHIHIRO_MAVEN_SNAPSHOTS_URL = "CHIHIRO_MAVEN_SNAPSHOTS_URL"
     static final String CHIHIRO_MAVEN_USERNAME = "CHIHIRO_MAVEN_USERNAME"
     static final String CHIHIRO_MAVEN_PASSWORD = "CHIHIRO_MAVEN_PASSWORD"
-    static final String CHIHIRO_ENABLE_JRELEASER = "CHIHIRO_ENABLE_JRELEASER"
+    static final String CHIHIRO_MAVEN_LOCAL = "CHIHIRO_MAVEN_LOCAL"
 
     String groupId
     String artifactId
@@ -52,7 +52,7 @@ class MvnConfig {
     String mavenUsername
     @Expose(serialize = false)
     String mavenPassword
-    boolean enableJReleaser = false
+    boolean mavenLocal = false
 
     static MvnConfig load(Project project) {
         return new MvnConfig(project)
@@ -103,7 +103,7 @@ class MvnConfig {
         pomSCMConnection = reader.getStringProperty(CHIHIRO_POM_SCM_CONNECTION) ?: ""
         pomSCMDeveloperConnection = reader.getStringProperty(CHIHIRO_POM_SCM_DEVELOPER_CONNECTION) ?: ""
         pomSCMUrl = reader.getStringProperty(CHIHIRO_POM_SCM_URL) ?: ""
-        enableJReleaser = reader.getBooleanProperty(CHIHIRO_ENABLE_JRELEASER) ?: false
+        mavenLocal = reader.getBooleanProperty(CHIHIRO_MAVEN_LOCAL) ?: false
         mavenReleasesRepoUrl = reader.getStringProperty(CHIHIRO_MAVEN_RELEASES_URL) ?: ""
         mavenSnapshotsRepoUrl = reader.getStringProperty(CHIHIRO_MAVEN_SNAPSHOTS_URL) ?: ""
         mavenUsername = reader.getStringProperty(CHIHIRO_MAVEN_USERNAME) ?: ""
@@ -140,7 +140,7 @@ class MvnConfig {
             return false
         }
 
-        if (!enableJReleaser) {
+        if (!mavenLocal) {
             if (isReleaseVersion()) {
                 if (TextUtils.isEmpty(mavenReleasesRepoUrl)) {
                     Logger.e("缺少 ${CHIHIRO_MAVEN_RELEASES_URL} 配置。")
@@ -169,24 +169,26 @@ class MvnConfig {
     @Override
     String toString() {
         return "MvnConfig{" +
-                "enableJReleaser=" + enableJReleaser +
-                ", mavenSnapshotsRepoUrl='" + mavenSnapshotsRepoUrl + '\'' +
-                ", mavenReleasesRepoUrl='" + mavenReleasesRepoUrl + '\'' +
-                ", pomSCMUrl='" + pomSCMUrl + '\'' +
-                ", pomSCMDeveloperConnection='" + pomSCMDeveloperConnection + '\'' +
-                ", pomSCMConnection='" + pomSCMConnection + '\'' +
-                ", pomDeveloperEMail='" + pomDeveloperEMail + '\'' +
-                ", pomDeveloperName='" + pomDeveloperName + '\'' +
-                ", pomDeveloperId='" + pomDeveloperId + '\'' +
-                ", pomLicenseUrl='" + pomLicenseUrl + '\'' +
-                ", pomLicenseName='" + pomLicenseName + '\'' +
-                ", pomInceptionYear='" + pomInceptionYear + '\'' +
-                ", pomUrl='" + pomUrl + '\'' +
-                ", pomDescription='" + pomDescription + '\'' +
-                ", pomName='" + pomName + '\'' +
-                ", version='" + version + '\'' +
+                "groupId='" + groupId + '\'' +
                 ", artifactId='" + artifactId + '\'' +
-                ", groupId='" + groupId + '\'' +
-                '}'
+                ", version='" + version + '\'' +
+                ", pomName='" + pomName + '\'' +
+                ", pomDescription='" + pomDescription + '\'' +
+                ", pomUrl='" + pomUrl + '\'' +
+                ", pomInceptionYear='" + pomInceptionYear + '\'' +
+                ", pomLicenseName='" + pomLicenseName + '\'' +
+                ", pomLicenseUrl='" + pomLicenseUrl + '\'' +
+                ", pomDeveloperId='" + pomDeveloperId + '\'' +
+                ", pomDeveloperName='" + pomDeveloperName + '\'' +
+                ", pomDeveloperEMail='" + pomDeveloperEMail + '\'' +
+                ", pomSCMConnection='" + pomSCMConnection + '\'' +
+                ", pomSCMDeveloperConnection='" + pomSCMDeveloperConnection + '\'' +
+                ", pomSCMUrl='" + pomSCMUrl + '\'' +
+                ", mavenReleasesRepoUrl='" + mavenReleasesRepoUrl + '\'' +
+                ", mavenSnapshotsRepoUrl='" + mavenSnapshotsRepoUrl + '\'' +
+                ", mavenUsername='" + mavenUsername + '\'' +
+                ", mavenPassword='" + mavenPassword + '\'' +
+                ", mavenLocal=" + mavenLocal +
+                '}';
     }
 }
