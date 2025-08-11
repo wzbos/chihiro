@@ -87,9 +87,13 @@ class MvnPlugin implements Plugin<Project> {
                     println("components: ${component.name}")
                     if (component.name != buildType && component.name != "java") return
 
-                    def appendage = component.name.replaceAll("[Rr]elease", "")
-                    if (!appendage.isEmpty())
-                        appendage = "-$appendage"
+                    def appendage = ""
+                    if (component.name != "java") {
+                        appendage = component.name.replaceAll("[Rr]elease", "")
+                        if (!appendage.isEmpty()) {
+                            appendage = "-$appendage"
+                        }
+                    }
 
                     println("appendage: $appendage")
 

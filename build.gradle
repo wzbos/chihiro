@@ -113,7 +113,7 @@ jreleaser {
         maven {
             mavenCentral {
                 sonatype {
-                    namespace = "cn.wzbos.android"
+                    namespace = GROUP_ID
                     active = 'ALWAYS'
                     url = 'https://central.sonatype.com/api/v1/publisher'
                     stagingRepository(layout.buildDirectory.dir('staging-deploy').get().toString())
