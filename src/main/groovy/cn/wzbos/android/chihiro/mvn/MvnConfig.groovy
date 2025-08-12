@@ -3,6 +3,7 @@ package cn.wzbos.android.chihiro.mvn
 import cn.wzbos.android.chihiro.utils.Logger
 import cn.wzbos.android.chihiro.utils.TextUtils
 import org.gradle.api.Project
+import org.gradle.api.initialization.Settings
 import org.gradle.internal.impldep.com.google.gson.annotations.Expose
 
 /**
@@ -58,33 +59,22 @@ class MvnConfig {
         return new MvnConfig(project)
     }
 
-    static MvnConfig load(String path) throws IOException {
+    static MvnConfig load(Settings settings, String path) throws IOException {
         File file = new File(path)
         if (!file.exists()) {
             throw new FileNotFoundException("配置文件不存在，请添加配置！\nfile:" + file.getPath())
         }
-        try (FileInputStream inputStream = new FileInputStream(file)) {
-            Properties properties = new Properties()
-            properties.load(inputStream)
-            return new MvnConfig(properties)
-        }
+        return new MvnConfig(settings, file)
     }
 
-    MvnConfig(Properties properties) {
-        loadProperties(new MultiSourcePropertyReader(null, properties, localProperties))
+    MvnConfig(Settings settings, File modulePropertiesFile) {
+        File localPropertiesFile = settings.rootDir.toPath().resolve("local.properties").toFile()
+        loadProperties(new MultiSourcePropertyReader(null, modulePropertiesFile, localPropertiesFile))
     }
 
     MvnConfig(Project project) {
-        def localProperties = null
-        File file = project.rootProject.file('local.properties')
-        if (file.exists()) {
-            localProperties = new Properties()
-            try (FileInputStream inputStream = new FileInputStream(file)) {
-                localProperties.load(inputStream)
-            }
-        }
-
-        loadProperties(new MultiSourcePropertyReader(project, null, localProperties))
+        File localPropertiesFile = project.rootProject.file('local.properties')
+        loadProperties(new MultiSourcePropertyReader(project, null, localPropertiesFile))
     }
 
     void loadProperties(MultiSourcePropertyReader reader) {

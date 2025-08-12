@@ -65,7 +65,7 @@ class ChihiroSettingsPlugin implements Plugin<Settings> {
                     if (f.directory) {
                         def gradleSettingsPath = f.getPath() + File.separator + "gradle.properties"
                         if (new File(gradleSettingsPath).exists()) {
-                            MvnConfig mvnConfig = MvnConfig.load(gradleSettingsPath)
+                            MvnConfig mvnConfig = MvnConfig.load(settings, gradleSettingsPath)
                             if (mvnConfig != null && mvnConfig.isValid()) {
                                 def moduleName = ":$projectName:${mvnConfig.artifactId}"
                                 Logger.i("include '${moduleName}'")
